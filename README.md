@@ -1,4 +1,5 @@
 # Personal Assistant PIN
+<img src="imgs/image.png">
 
 Small multimodal personal-assistant prototype built around Kafka, Spark, and a Groq-powered decision engine.
 
