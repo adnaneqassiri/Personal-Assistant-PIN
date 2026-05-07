@@ -44,4 +44,12 @@ echo "[run-all] starting decision engine"
 pids+=("$!")
 
 echo "[run-all] running. Press Ctrl+C to stop."
-wait
+while true; do
+  for pid in "${pids[@]}"; do
+    if ! kill -0 "$pid" 2>/dev/null; then
+      echo "[run-all] process ${pid} exited. Stopping the rest."
+      exit 1
+    fi
+  done
+  sleep 2
+done
