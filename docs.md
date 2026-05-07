@@ -63,7 +63,7 @@ docker exec kafka /opt/kafka/bin/kafka-topics.sh \
   --bootstrap-server localhost:9092 \
   --create \
   --if-not-exists \
-  --topic contextBuilder \
+  --topic normalized-context \
   --partitions 1 \
   --replication-factor 1
 ```
@@ -98,7 +98,7 @@ Never commit real API keys.
 GROQ_API_KEY=replace_with_your_groq_api_key
 
 KAFKA_BOOTSTRAP_SERVERS=localhost:29092
-KAFKA_SOURCE_TOPIC=contextBuilder
+KAFKA_SOURCE_TOPIC=normalized-context
 KAFKA_ACTIONS_TOPIC=decision.actions
 
 MONGO_URI=mongodb://admin:admin123@localhost:27017
@@ -174,7 +174,7 @@ docker exec kafka /opt/kafka/bin/kafka-topics.sh \
   --bootstrap-server localhost:9092 \
   --create \
   --if-not-exists \
-  --topic contextBuilder \
+  --topic normalized-context \
   --partitions 1 \
   --replication-factor 1
 ```
@@ -209,7 +209,7 @@ LOG_LEVEL=INFO python -m Decision_engine.app.main_spark_processor \
 Wait until you see a log similar to:
 
 ```text
-Starting Spark streaming source_topic=contextBuilder actions_topic=decision.actions checkpoint=./checkpoints/decision-engine-e2e once=False
+Starting Spark streaming source_topic=normalized-context actions_topic=decision.actions checkpoint=./checkpoints/decision-engine-e2e once=False
 ```
 
 #### Terminal 3: Publish One Kafka Message
@@ -251,7 +251,7 @@ Complete formatted event:
 Copy-paste command:
 
 ```bash
-printf '%s\n' '{"context_id":"ctx_e2e_001","user_id":"user_001","created_at":"2026-04-29T15:00:00Z","vision":{"timestamp":"2026-04-29T15:00:00Z","objects":["laptop","desk","bottle"],"scene_description":"User is sitting at a desk and working on a laptop with a bottle nearby.","confidence":0.88,"media_ref":"capture_e2e_001.jpg"},"audio":{"timestamp":"2026-04-29T15:00:00Z","transcript":"We need to finish the decision engine MVP today.","keywords":["decision engine","mvp","deadline"],"confidence":0.84,"audio_ref":"audio_e2e_001.wav"},"location":{"timestamp":"2026-04-29T15:00:00Z","latitude":35.7595,"longitude":-5.834,"place_label":"home","zone_type":"home"}}' | docker exec -i kafka /opt/kafka/bin/kafka-console-producer.sh --bootstrap-server localhost:9092 --topic contextBuilder
+printf '%s\n' '{"context_id":"ctx_e2e_001","user_id":"user_001","created_at":"2026-04-29T15:00:00Z","vision":{"timestamp":"2026-04-29T15:00:00Z","objects":["laptop","desk","bottle"],"scene_description":"User is sitting at a desk and working on a laptop with a bottle nearby.","confidence":0.88,"media_ref":"capture_e2e_001.jpg"},"audio":{"timestamp":"2026-04-29T15:00:00Z","transcript":"We need to finish the decision engine MVP today.","keywords":["decision engine","mvp","deadline"],"confidence":0.84,"audio_ref":"audio_e2e_001.wav"},"location":{"timestamp":"2026-04-29T15:00:00Z","latitude":35.7595,"longitude":-5.834,"place_label":"home","zone_type":"home"}}' | docker exec -i kafka /opt/kafka/bin/kafka-console-producer.sh --bootstrap-server localhost:9092 --topic normalized-context
 ```
 
 ### What You Should Observe
@@ -484,7 +484,7 @@ If there is no `Processing Kafka message` log:
 
 - Spark is not receiving messages from Kafka.
 - Check that Spark was started before publishing the message.
-- Check the topic name: `contextBuilder`.
+- Check the topic name: `normalized-context`.
 - Check `KAFKA_BOOTSTRAP_SERVERS=localhost:29092`.
 
 If you see `Failed to parse Kafka message`:
@@ -644,7 +644,7 @@ docker exec kafka /opt/kafka/bin/kafka-topics.sh \
 Publish a simple valid event:
 
 ```bash
-printf '%s\n' '{"context_id":"ctx_ping_001","user_id":"user_001","created_at":"2026-04-29T15:00:00Z"}' | docker exec -i kafka /opt/kafka/bin/kafka-console-producer.sh --bootstrap-server localhost:9092 --topic contextBuilder
+printf '%s\n' '{"context_id":"ctx_ping_001","user_id":"user_001","created_at":"2026-04-29T15:00:00Z"}' | docker exec -i kafka /opt/kafka/bin/kafka-console-producer.sh --bootstrap-server localhost:9092 --topic normalized-context
 ```
 
 Read the topic:
@@ -652,7 +652,7 @@ Read the topic:
 ```bash
 docker exec -it kafka /opt/kafka/bin/kafka-console-consumer.sh \
   --bootstrap-server localhost:9092 \
-  --topic contextBuilder \
+  --topic normalized-context \
   --from-beginning \
   --max-messages 1
 ```

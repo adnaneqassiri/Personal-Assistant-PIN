@@ -53,13 +53,27 @@ class ChromaVectorStore(VectorStorePort):
     def _build_client(self):
         try:
             import chromadb
+            from chromadb.config import Settings as ChromaSettings
         except ImportError as exc:
             raise RuntimeError(
                 "chromadb is required for ChromaVectorStore. "
                 "Install it with 'pip install chromadb'."
             ) from exc
 
-        return chromadb.PersistentClient(path=self.settings.chroma_path)
+        return chromadb.PersistentClient(
+            path=self.settings.chroma_path,
+            settings=ChromaSettings(
+                anonymized_telemetry=False,
+                chroma_product_telemetry_impl=(
+                    "Decision_engine.storage.chroma_telemetry."
+                    "NoOpProductTelemetryClient"
+                ),
+                chroma_telemetry_impl=(
+                    "Decision_engine.storage.chroma_telemetry."
+                    "NoOpProductTelemetryClient"
+                ),
+            ),
+        )
 
     def _build_metadata(self, metadata: Dict[str, Any]) -> Dict[str, Any]:
         built = dict(metadata)

@@ -154,6 +154,11 @@ class EventProcessor(object):
                 error="; ".join(validation_result.errors),
             )
 
+        logger.info(
+            "Kafka message passes validation context_id=%s user_id=%s",
+            context_id,
+            user_id,
+        )
         raw_context = validation_result.raw_context
         normalized_context = transform_context(raw_context)
         self.storage.save_normalized_context(normalized_context)
@@ -280,6 +285,14 @@ class EventProcessor(object):
             significance_result=significance_result,
             meeting_result=meeting_result,
         )
+        logger.info(
+            "Decision generated context_id=%s user_id=%s decision_id=%s decision_type=%s actions_count=%s",
+            normalized_context.context_id,
+            normalized_context.user_id,
+            decision.decision_id,
+            decision.decision_type,
+            len(decision.actions),
+        )
 
         self.storage.save_user_state(updated_state)
         self.storage.save_decision_history(
@@ -291,6 +304,17 @@ class EventProcessor(object):
                 rule_results=rule_results,
                 meeting_result=meeting_result,
             )
+        )
+        logger.info(
+            "Data written to MongoDB context_id=%s user_id=%s collections=%s",
+            normalized_context.context_id,
+            normalized_context.user_id,
+            [
+                "raw_context_events",
+                "normalized_contexts",
+                "user_state",
+                "decisions_history",
+            ],
         )
         logger.info(
             "Decision saved context_id=%s user_id=%s decision_id=%s decision_type=%s actions_count=%s",

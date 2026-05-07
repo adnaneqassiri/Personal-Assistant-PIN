@@ -1,14 +1,17 @@
 from kafka import KafkaProducer
 import json
+import os
 from datetime import datetime, timedelta
 
 # -------------------------------
 # Config Kafka
 # -------------------------------
 producer = KafkaProducer(
-    bootstrap_servers='localhost:29092',
+    bootstrap_servers=os.getenv("KAFKA_BOOTSTRAP_SERVERS", "localhost:29092"),
     value_serializer=lambda v: json.dumps(v).encode('utf-8')
 )
+
+topic = os.getenv("CONTEXT_TOPIC", os.getenv("KAFKA_TOPIC", "normalized-context"))
 
 # -------------------------------
 # Génération de 5 messages
@@ -54,7 +57,7 @@ for i in range(5):
 # Envoi
 # -------------------------------
 for msg in messages:
-    producer.send("contextBuilder", msg)
+    producer.send(topic, msg)
 
 producer.flush()
 

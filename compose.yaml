@@ -57,6 +57,35 @@ services:
       KAFKA_CLUSTERS_0_NAME: local
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092  
 
+  context-ingestion-builder:
+    image: apache/spark:3.5.1
+    container_name: context-ingestion-builder
+    profiles:
+      - context-ingestion
+    depends_on:
+      - kafka
+    env_file:
+      - .env
+    working_dir: /opt/spark-apps
+    volumes:
+      - ./:/opt/spark-apps
+    environment:
+      PYTHONPATH: /opt/spark-apps
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      CONTEXT_TOPIC: normalized-context
+      AUDIO_STREAM_TOPIC: audio_stream
+      VIDEO_STREAM_TOPIC: video_stream
+      LOCATION_STREAM_TOPIC: location_stream
+      CONTEXT_BUILDER_CHECKPOINT_LOCATION: /tmp/context-builder-checkpoint
+      LOG_LEVEL: INFO
+    command: >
+      bash -c "pip install --no-cache-dir -r context_ingestion/requirements.txt &&
+      /opt/spark/bin/spark-submit
+      --master local[*]
+      --conf spark.jars.ivy=/tmp/.ivy
+      --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.1
+      context_ingestion/builder/context_builder.py"
+
   mongodb:
     image: mongo:7.0
     container_name: mongodb

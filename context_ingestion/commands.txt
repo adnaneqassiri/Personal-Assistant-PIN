@@ -1,0 +1,19 @@
+Install context ingestion dependencies:
+pip install -r context_ingestion/requirements.txt
+
+Run all raw data producers:
+python -m context_ingestion.producers.run_producers
+
+Run one producer:
+python -m context_ingestion.producers.video_producer
+python -m context_ingestion.producers.audio_producer
+python -m context_ingestion.producers.location_producer
+
+Run the context builder locally:
+python -m context_ingestion.builder.context_builder
+
+Publish one sample normalized context message:
+python -m context_ingestion.publish_sample_context
+
+Run the context builder with Docker Compose:
+docker compose --profile context-ingestion up context-ingestion-builder

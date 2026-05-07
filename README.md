@@ -21,7 +21,7 @@ The final decision is produced by deterministic backend modules using state, rul
 Global flow:
 
 ```text
-Kafka contextBuilder
+Kafka normalized-context
 -> Spark Structured Streaming
 -> EventProcessor
 -> Validation / Normalization
@@ -39,6 +39,18 @@ Kafka contextBuilder
 ## Architecture
 
 ```text
+.
+├── Decision_engine/
+├── context_ingestion/
+├── scripts/
+├── tests/
+├── compose.yaml
+├── .env
+├── requirements.txt
+└── README.md
+```
+
+```text
 Decision_engine/
 ├── app/
 ├── config/
@@ -50,6 +62,25 @@ Decision_engine/
 ├── storage/
 ├── utils/
 └── tests/
+```
+
+```text
+context_ingestion/
+├── producers/
+│   ├── audio_producer.py
+│   ├── video_producer.py
+│   ├── location_producer.py
+│   └── run_producers.py
+├── builder/
+│   └── context_builder.py
+├── kafka/
+│   └── context_producer.py
+├── data/
+│   ├── audio/
+│   └── video/
+├── config.py
+├── publish_sample_context.py
+└── requirements.txt
 ```
 
 ### `app/`
@@ -159,7 +190,7 @@ Important: the LLM never decides whether to notify, save, publish, or act. It on
 
 ## Input Kafka Event Format
 
-Topic: `contextBuilder`
+Topic: `normalized-context`
 
 Each message must be a single JSON object, not a list.
 
@@ -204,8 +235,24 @@ Do not commit real secrets.
 GROQ_API_KEY=replace_with_your_groq_api_key
 
 KAFKA_BOOTSTRAP_SERVERS=localhost:29092
-KAFKA_SOURCE_TOPIC=contextBuilder
+CONTEXT_TOPIC=normalized-context
+KAFKA_TOPIC=normalized-context
+KAFKA_SOURCE_TOPIC=normalized-context
+KAFKA_AUTO_OFFSET_RESET=earliest
+NOTIFICATION_TOPIC=decision.actions
 KAFKA_ACTIONS_TOPIC=decision.actions
+
+AUDIO_STREAM_TOPIC=audio_stream
+VIDEO_STREAM_TOPIC=video_stream
+LOCATION_STREAM_TOPIC=location_stream
+CONTEXT_USER_ID=user_001
+CONTEXT_POLL_INTERVAL_SECONDS=15
+CONTEXT_BUCKET_SECONDS=15
+CONTEXT_WATERMARK_DELAY="30 seconds"
+CONTEXT_BUILDER_CHECKPOINT_LOCATION=./checkpoints/context_builder
+
+SPARK_MASTER=local[*]
+SPARK_CHECKPOINT_LOCATION=./checkpoints/decision_engine
 
 MONGO_URI=mongodb://admin:admin123@localhost:27017
 MONGO_DATABASE=assistant_db
@@ -226,8 +273,16 @@ OBJECT_CHANGE_THRESHOLD=0.50
 
 - `GROQ_API_KEY`: Groq API key used by the real LLM client.
 - `KAFKA_BOOTSTRAP_SERVERS`: Kafka bootstrap address, usually `localhost:29092`.
-- `KAFKA_SOURCE_TOPIC`: source topic, default `contextBuilder`.
-- `KAFKA_ACTIONS_TOPIC`: output actions topic, default `decision.actions`.
+- `CONTEXT_TOPIC`: normalized context topic, default `normalized-context`.
+- `KAFKA_TOPIC`: topic used by `Decision_engine.run_kafka_decision_engine`.
+- `KAFKA_SOURCE_TOPIC`: topic used by the full Decision Engine Spark processor.
+- `KAFKA_AUTO_OFFSET_RESET`: Spark Kafka starting offset, use `earliest` for local tests with existing messages.
+- `NOTIFICATION_TOPIC`: output notification/actions topic.
+- `KAFKA_ACTIONS_TOPIC`: existing Decision Engine env name for `NOTIFICATION_TOPIC`.
+- `AUDIO_STREAM_TOPIC`, `VIDEO_STREAM_TOPIC`, `LOCATION_STREAM_TOPIC`: internal raw context ingestion topics.
+- `CONTEXT_BUILDER_CHECKPOINT_LOCATION`: context builder Spark checkpoint path.
+- `SPARK_MASTER`: Spark master used by local scripts.
+- `SPARK_CHECKPOINT_LOCATION`: Decision Engine runner checkpoint path.
 - `MONGO_URI`: MongoDB URI.
 - `MONGO_DATABASE`: MongoDB database name.
 - `CHROMA_PATH`: local Chroma persistence path.
@@ -238,9 +293,9 @@ OBJECT_CHANGE_THRESHOLD=0.50
 - `VISUAL_SIMILARITY_THRESHOLD`: Jaccard threshold for visual description changes.
 - `OBJECT_CHANGE_THRESHOLD`: object-set change threshold.
 
-## Installation
+## Runtime And Installation
 
-Python 3.8 is the target runtime for this MVP.
+Python 3.10+ is recommended. The current Python 3.8 environment uses the compatible pins in `requirements.txt`, including `chromadb==0.5.23`, `langchain-core==0.2.43`, `langchain-groq==0.1.10`, and `posthog>=2.4,<4`. Newer ChromaDB 1.x requires Python 3.9+, and newer PostHog 4.x uses Python 3.9+ typing syntax that can crash ChromaDB startup on Python 3.8 with `TypeError: 'type' object is not subscriptable`. The Decision Engine also configures ChromaDB with a local no-op telemetry client so PostHog is not imported during startup.
 
 ```bash
 python -m venv .venv
@@ -257,6 +312,26 @@ Start Kafka and MongoDB:
 docker compose up -d kafka mongodb
 ```
 
+Run the cleaned pipeline scripts:
+
+```bash
+./scripts/run_context_builder.sh
+./scripts/run_decision_engine.sh
+./scripts/run_all.sh
+```
+
+Publish one sample context message:
+
+```bash
+python -m context_ingestion.publish_sample_context
+```
+
+Verify the Decision Engine consumes and persists a context message:
+
+```bash
+./scripts/test_decision_engine_consumes_context.sh
+```
+
 Check containers:
 
 ```bash
@@ -270,7 +345,7 @@ docker exec kafka /opt/kafka/bin/kafka-topics.sh \
   --bootstrap-server kafka:9092 \
   --create \
   --if-not-exists \
-  --topic contextBuilder \
+  --topic normalized-context \
   --partitions 1 \
   --replication-factor 1
 ```
@@ -290,7 +365,7 @@ Publish a test event:
 ```bash
 cat <<'JSON' | docker exec -i kafka /opt/kafka/bin/kafka-console-producer.sh \
   --bootstrap-server kafka:9092 \
-  --topic contextBuilder
+  --topic normalized-context
 {"context_id":"ctx_e2e_001","user_id":"user_001","created_at":"2026-04-29T15:00:00Z","vision":{"timestamp":"2026-04-29T15:00:00Z","objects":["laptop","desk","bottle"],"scene_description":"User is sitting at a desk and working on a laptop with a bottle nearby.","confidence":0.88,"media_ref":"capture_e2e_001.jpg"},"audio":{"timestamp":"2026-04-29T15:00:00Z","transcript":"We need to finish the decision engine MVP today.","keywords":["decision engine","mvp","deadline"],"confidence":0.84,"audio_ref":"audio_e2e_001.wav"},"location":{"timestamp":"2026-04-29T15:00:00Z","latitude":35.7595,"longitude":-5.834,"place_label":"home","zone_type":"home"}}
 JSON
 ```
@@ -349,6 +424,8 @@ python -m Decision_engine.app.daily_summary_job --user-id user_001 --date 2026-0
 ## MongoDB Collections
 
 The MVP uses MongoDB as the source of truth.
+
+Default database: `assistant_db`.
 
 - `raw_context_events`: raw Kafka events, including invalid ones with status and errors.
 - `normalized_contexts`: internal normalized context format.

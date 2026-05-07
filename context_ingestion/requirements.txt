@@ -1,0 +1,4 @@
+kafka-python>=2.0.2,<3
+python-dotenv>=1.0,<2
+groq>=0.15,<1
+pyspark==3.5.1

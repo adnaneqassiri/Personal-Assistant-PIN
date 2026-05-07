@@ -6,8 +6,9 @@ from pydantic import BaseModel, Field
 
 class Settings(BaseModel):
     kafka_bootstrap_servers: str = Field(default="localhost:29092")
-    kafka_source_topic: str = Field(default="contextBuilder")
+    kafka_source_topic: str = Field(default="normalized-context")
     kafka_actions_topic: str = Field(default="decision.actions")
+    kafka_auto_offset_reset: str = Field(default="earliest")
 
     mongo_uri: str = Field(default="mongodb://admin:admin123@localhost:27017")
     mongo_database: str = Field(default="assistant_db")
@@ -30,8 +31,15 @@ def get_settings() -> Settings:
         kafka_bootstrap_servers=os.getenv(
             "KAFKA_BOOTSTRAP_SERVERS", "localhost:29092"
         ),
-        kafka_source_topic=os.getenv("KAFKA_SOURCE_TOPIC", "contextBuilder"),
-        kafka_actions_topic=os.getenv("KAFKA_ACTIONS_TOPIC", "decision.actions"),
+        kafka_source_topic=os.getenv(
+            "KAFKA_SOURCE_TOPIC",
+            os.getenv("CONTEXT_TOPIC", "normalized-context"),
+        ),
+        kafka_actions_topic=os.getenv(
+            "KAFKA_ACTIONS_TOPIC",
+            os.getenv("NOTIFICATION_TOPIC", "decision.actions"),
+        ),
+        kafka_auto_offset_reset=os.getenv("KAFKA_AUTO_OFFSET_RESET", "earliest"),
         mongo_uri=os.getenv("MONGO_URI", "mongodb://admin:admin123@localhost:27017"),
         mongo_database=os.getenv("MONGO_DATABASE", "assistant_db"),
         chroma_path=os.getenv("CHROMA_PATH", "./chroma"),

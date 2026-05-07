@@ -159,7 +159,7 @@ def run(
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Read contextBuilder Kafka topic data and print decision engine output."
+        description="Read normalized context Kafka topic data and print decision engine output."
     )
     parser.add_argument(
         "--bootstrap-servers",
@@ -168,8 +168,11 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--topic",
-        default=os.getenv("KAFKA_TOPIC", "contextBuilder"),
-        help="Kafka topic to read. Default: contextBuilder",
+        default=os.getenv(
+            "KAFKA_TOPIC",
+            os.getenv("CONTEXT_TOPIC", "normalized-context"),
+        ),
+        help="Kafka topic to read. Default: normalized-context",
     )
     parser.add_argument(
         "--master",

@@ -66,15 +66,16 @@ class SparkKafkaConsumer(object):
 
     def build_stream(self, spark):
         logger.info(
-            "Building Kafka stream topic=%s bootstrap_servers=%s",
+            "Building Kafka stream topic=%s bootstrap_servers=%s auto_offset_reset=%s",
             self.settings.kafka_source_topic,
             self.settings.kafka_bootstrap_servers,
+            self.settings.kafka_auto_offset_reset,
         )
         raw_df = (
             spark.readStream.format("kafka")
             .option("kafka.bootstrap.servers", self.settings.kafka_bootstrap_servers)
             .option("subscribe", self.settings.kafka_source_topic)
-            .option("startingOffsets", "latest")
+            .option("startingOffsets", self.settings.kafka_auto_offset_reset)
             .load()
         )
         return raw_df.selectExpr("CAST(value AS STRING) AS value")
@@ -84,6 +85,12 @@ class SparkKafkaConsumer(object):
         logger.info("Processing Spark batch batch_id=%s message_count=%s", batch_id, len(rows))
         for index, row in enumerate(rows, start=1):
             value = row["value"] if isinstance(row, dict) else row.value
+            logger.info(
+                "Kafka message received batch_id=%s row_number=%s value_preview=%s",
+                batch_id,
+                index,
+                str(value)[:500],
+            )
             try:
                 payload = parse_kafka_event(value)
             except Exception:
@@ -96,6 +103,14 @@ class SparkKafkaConsumer(object):
 
             context_id = payload.get("context_id")
             user_id = payload.get("user_id")
+            logger.info(
+                "Kafka message parsed batch_id=%s row_number=%s context_id=%s user_id=%s keys=%s",
+                batch_id,
+                index,
+                context_id,
+                user_id,
+                sorted(payload.keys()),
+            )
             logger.info(
                 "Processing Kafka message batch_id=%s row_number=%s context_id=%s user_id=%s",
                 batch_id,
@@ -127,9 +142,10 @@ class SparkKafkaConsumer(object):
             writer = writer.trigger(availableNow=True)
 
         logger.info(
-            "Starting Spark streaming source_topic=%s actions_topic=%s checkpoint=%s once=%s",
+            "Starting Spark streaming source_topic=%s actions_topic=%s auto_offset_reset=%s checkpoint=%s once=%s",
             self.settings.kafka_source_topic,
             self.settings.kafka_actions_topic,
+            self.settings.kafka_auto_offset_reset,
             self.checkpoint_location,
             self.once,
         )

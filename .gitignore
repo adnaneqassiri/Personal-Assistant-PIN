@@ -39,3 +39,7 @@ Thumbs.db
 .vscode/
 
 Notes.md
+
+checkpoints/context_builder/*
+context_builder/decision_engine/*
+*.crc
