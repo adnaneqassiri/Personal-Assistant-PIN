@@ -1,105 +1,161 @@
-# Decision Engine - Practical Guide
+# Personal Assistant PIN - Guide Simple
 
-This document explains how to run, test, inspect, and extend the Decision Engine.
-It is written for local development and uses only features implemented in this repository.
+Ce guide explique comment lancer, tester et debugger le projet complet en local.
 
-## 1. How to Run the Project
+## 1. Vue D'ensemble
 
-### Prerequisites
+Le projet est organisé autour de ce pipeline:
 
-- Python 3.8 or newer. Python 3.8 is the target runtime mentioned by the project README.
-- Docker and Docker Compose.
-- A Groq API key in your environment when you run the real Decision Engine.
-- Java available locally for PySpark.
-
-Check your tools:
-
-```bash
-python --version
-docker --version
-docker compose version
-java -version
+```text
+Image + audio + location
+-> context_ingestion producers
+-> Kafka raw topics
+   - video_stream
+   - audio_stream
+   - location_stream
+-> context_ingestion builder
+-> Kafka normalized-context
+-> Decision_engine
+-> MongoDB + ChromaDB
+-> Kafka decision.actions
+-> backend / chatbot / UI
 ```
 
-### Install Dependencies
+Structure principale:
 
-From the project root:
-
-```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
+```text
+.
+├── Decision_engine/
+├── context_ingestion/
+├── scripts/
+├── tests/
+├── compose.yaml
+├── .env
+├── requirements.txt
+├── README.md
+└── docs.md
 ```
 
-### Start Kafka and MongoDB
+## 2. Rôle De Chaque Partie
 
-Start only the services required by the Decision Engine:
+### Context Ingestion
 
-```bash
-docker compose up -d kafka mongodb
+Dossier: `context_ingestion/`
+
+Responsabilité:
+
+- lire les données audio depuis `context_ingestion/data/audio/`
+- lire les images depuis `context_ingestion/data/video/`
+- produire une localisation simulée
+- envoyer les données brutes vers Kafka
+- construire un contexte normalisé
+- publier le contexte final dans le topic Kafka `normalized-context`
+
+Topics utilisés:
+
+```text
+video_stream
+audio_stream
+location_stream
+normalized-context
 ```
 
-Check that both containers are running:
+### Decision Engine
 
-```bash
-docker ps --filter name=kafka --filter name=mongodb
+Dossier: `Decision_engine/`
+
+Responsabilité:
+
+- consommer `normalized-context`
+- valider le message
+- transformer en modèle interne
+- détecter si le contexte est significatif
+- appeler Groq si nécessaire
+- appliquer les règles métier
+- écrire dans MongoDB
+- indexer la mémoire utile dans ChromaDB
+- publier les actions dans `decision.actions`
+
+Collections MongoDB utilisées:
+
+```text
+assistant_db.raw_context_events
+assistant_db.normalized_contexts
+assistant_db.user_state
+assistant_db.activities
+assistant_db.meetings
+assistant_db.notifications
+assistant_db.decisions_history
+assistant_db.daily_summaries
 ```
 
-Optional UI services:
+### Backend
 
-```bash
-docker compose up -d kafka-ui mongo-express
+Le backend doit se brancher après le Decision Engine.
+
+Rôle recommandé:
+
+- lire MongoDB pour afficher l'historique, les décisions et l'état utilisateur
+- exposer des endpoints REST/WebSocket pour le frontend ou chatbot
+- écouter `decision.actions` si des notifications temps réel sont nécessaires
+
+Contrats utiles:
+
+```text
+MongoDB assistant_db.normalized_contexts
+MongoDB assistant_db.decisions_history
+MongoDB assistant_db.notifications
+Kafka topic decision.actions
 ```
 
-- Kafka UI: `http://localhost:8090`
-- Mongo Express: `http://localhost:8082`
+### Chatbot
 
-### Create Kafka Topics
+Le chatbot doit utiliser les données déjà traitées, pas les données brutes.
 
-The compose file enables Kafka auto topic creation, but creating topics explicitly makes local tests easier to debug.
+Rôle recommandé:
 
-```bash
-docker exec kafka /opt/kafka/bin/kafka-topics.sh \
-  --bootstrap-server localhost:9092 \
-  --create \
-  --if-not-exists \
-  --topic normalized-context \
-  --partitions 1 \
-  --replication-factor 1
+- répondre aux questions utilisateur avec l'historique MongoDB
+- utiliser ChromaDB pour récupérer les souvenirs pertinents
+- afficher ou expliquer les décisions prises
+- envoyer des commandes utilisateur au backend si nécessaire
+
+Sources recommandées:
+
+```text
+MongoDB assistant_db.decisions_history
+MongoDB assistant_db.normalized_contexts
+MongoDB assistant_db.user_state
+ChromaDB ./chroma
 ```
 
-```bash
-docker exec kafka /opt/kafka/bin/kafka-topics.sh \
-  --bootstrap-server localhost:9092 \
-  --create \
-  --if-not-exists \
-  --topic decision.actions \
-  --partitions 1 \
-  --replication-factor 1
-```
+## 3. Fichier `.env`
 
-List topics:
+Le projet charge les variables depuis le fichier `.env` à la racine.
 
-```bash
-docker exec kafka /opt/kafka/bin/kafka-topics.sh \
-  --bootstrap-server localhost:9092 \
-  --list
-```
-
-### Configure Environment Variables
-
-The project reads environment variables with `os.getenv`. It does not automatically load `.env`.
-Create a local `.env` file using the example below, then export it before running the app.
-Never commit real API keys.
-
-### `.env.example`
+Exemple:
 
 ```env
 GROQ_API_KEY=replace_with_your_groq_api_key
 
 KAFKA_BOOTSTRAP_SERVERS=localhost:29092
+CONTEXT_TOPIC=normalized-context
+KAFKA_TOPIC=normalized-context
 KAFKA_SOURCE_TOPIC=normalized-context
+KAFKA_AUTO_OFFSET_RESET=earliest
+NOTIFICATION_TOPIC=decision.actions
 KAFKA_ACTIONS_TOPIC=decision.actions
+
+AUDIO_STREAM_TOPIC=audio_stream
+VIDEO_STREAM_TOPIC=video_stream
+LOCATION_STREAM_TOPIC=location_stream
+CONTEXT_USER_ID=user_001
+CONTEXT_POLL_INTERVAL_SECONDS=15
+CONTEXT_BUCKET_SECONDS=15
+CONTEXT_WATERMARK_DELAY="30 seconds"
+CONTEXT_BUILDER_CHECKPOINT_LOCATION=./checkpoints/context_builder
+
+SPARK_MASTER=local[*]
+SPARK_CHECKPOINT_LOCATION=./checkpoints/decision_engine
 
 MONGO_URI=mongodb://admin:admin123@localhost:27017
 MONGO_DATABASE=assistant_db
@@ -108,532 +164,139 @@ CHROMA_PATH=./chroma
 
 GROQ_MODEL=llama-3.1-8b-instant
 LLM_RETRY_COUNT=3
-
-LOG_LEVEL=INFO
-
 APP_TIMEZONE=UTC
+LOG_LEVEL=INFO
 SIGNIFICANCE_PERIODIC_MINUTES=2
 VISUAL_SIMILARITY_THRESHOLD=0.75
 OBJECT_CHANGE_THRESHOLD=0.50
 ```
 
-Export the variables:
+Important:
+
+- `KAFKA_AUTO_OFFSET_RESET=earliest` est utile pour tester avec des messages déjà présents dans Kafka.
+- Si MongoDB est supprimé mais que `checkpoints/decision_engine` reste, Spark peut croire que les messages Kafka sont déjà consommés.
+- Si ChromaDB donne une erreur SQLite de schema, supprimer `chroma/`.
+
+## 4. Installation
+
+Active ton environnement Python, puis installe:
 
 ```bash
-set -a
-source .env
-set +a
+pip install -r requirements.txt
 ```
 
-### Run the Decision Engine with Spark
+Runtime recommandé:
 
-Run the Spark Structured Streaming entry point:
+```text
+Python 3.10+
+```
+
+Si tu utilises Python 3.8, les versions dans `requirements.txt` sont déjà adaptées:
+
+```text
+chromadb==0.5.23
+langchain-core==0.2.43
+langchain-groq==0.1.10
+```
+
+## 5. Démarrage Rapide
+
+### 1. Lancer Kafka et MongoDB
 
 ```bash
-LOG_LEVEL=INFO python -m Decision_engine.app.main_spark_processor \
-  --checkpoint-location ./checkpoints/decision-engine-local
+docker compose up -d kafka mongodb kafka-ui mongo-express
 ```
 
-This process keeps running and waits for new Kafka messages.
+Interfaces:
 
-For local Spark mode, the default master is `local[*]`.
-You can also pass it explicitly:
+```text
+Kafka UI:      http://localhost:8090
+Mongo Express: http://localhost:8082
+```
+
+### 2. Lancer le pipeline complet
+
+Terminal 1:
 
 ```bash
-LOG_LEVEL=INFO python -m Decision_engine.app.main_spark_processor \
-  --master 'local[*]' \
-  --checkpoint-location ./checkpoints/decision-engine-local
+./scripts/run_all.sh
 ```
 
-Important: `Decision_engine/kafka/spark_consumer.py` uses `startingOffsets="latest"`.
-For an end-to-end test, start Spark first, then publish Kafka messages.
+Ce script lance:
 
-## 2. How to Test the System
+```text
+context builder
+decision engine
+```
 
-### Run Unit Tests
+Logs:
+
+```text
+logs/context_builder.log
+logs/decision_engine.log
+```
+
+### 3. Lancer les producers audio/video/location
+
+Terminal 2:
 
 ```bash
-PYTHONDONTWRITEBYTECODE=1 python -m unittest discover -s tests/unit
+python -m context_ingestion.producers.run_producers
 ```
 
-The unit tests use mocks and fakes for MongoDB, Kafka, Chroma, Spark, and Groq.
-They do not require Docker services or a real Groq API call.
+Ce script tourne en boucle. Il va relire régulièrement:
 
-### End-to-End Test
+```text
+context_ingestion/data/video/frame1.jpg
+context_ingestion/data/audio/1.mp3
+```
 
-Use three terminals.
+C'est normal si Kafka reçoit plusieurs messages similaires.
 
-#### Terminal 1: Start Infrastructure
+## 6. Test Le Plus Simple
+
+Pour tester seulement:
 
 ```bash
 docker compose up -d kafka mongodb
+./scripts/test_decision_engine_consumes_context.sh
 ```
+
+Ce script:
+
+- charge `.env`
+- publie un message de test vers `normalized-context`
+- lance le Decision Engine en mode `available-now`
+- vérifie les logs suivants:
+
+```text
+Kafka message received
+Kafka message parsed
+Kafka message passes validation
+Decision generated
+Data written to MongoDB
+```
+
+## 7. Rejouer Kafka Vers MongoDB
+
+Si Kafka contient déjà des messages mais MongoDB est vide:
 
 ```bash
-docker exec kafka /opt/kafka/bin/kafka-topics.sh \
-  --bootstrap-server localhost:9092 \
-  --create \
-  --if-not-exists \
-  --topic normalized-context \
-  --partitions 1 \
-  --replication-factor 1
+rm -rf checkpoints/decision_engine
+./scripts/replay_normalized_context_to_mongo.sh
 ```
 
-```bash
-docker exec kafka /opt/kafka/bin/kafka-topics.sh \
-  --bootstrap-server localhost:9092 \
-  --create \
-  --if-not-exists \
-  --topic decision.actions \
-  --partitions 1 \
-  --replication-factor 1
-```
-
-#### Terminal 2: Start Spark
-
-Load environment variables first:
-
-```bash
-set -a
-source .env
-set +a
-```
-
-Start the Decision Engine:
-
-```bash
-LOG_LEVEL=INFO python -m Decision_engine.app.main_spark_processor \
-  --checkpoint-location ./checkpoints/decision-engine-e2e
-```
-
-Wait until you see a log similar to:
+Ce script utilise un checkpoint temporaire propre:
 
 ```text
-Starting Spark streaming source_topic=normalized-context actions_topic=decision.actions checkpoint=./checkpoints/decision-engine-e2e once=False
+/tmp/decision-engine-replay-normalized-context
 ```
 
-#### Terminal 3: Publish One Kafka Message
+Il lit `normalized-context` depuis `earliest` et écrit dans MongoDB.
 
-Kafka messages must be a single JSON object.
-Do not send a JSON list.
+## 8. Vérifier Kafka
 
-Complete formatted event:
-
-```json
-{
-  "context_id": "ctx_e2e_001",
-  "user_id": "user_001",
-  "created_at": "2026-04-29T15:00:00Z",
-  "vision": {
-    "timestamp": "2026-04-29T15:00:00Z",
-    "objects": ["laptop", "desk", "bottle"],
-    "scene_description": "User is sitting at a desk and working on a laptop with a bottle nearby.",
-    "confidence": 0.88,
-    "media_ref": "capture_e2e_001.jpg"
-  },
-  "audio": {
-    "timestamp": "2026-04-29T15:00:00Z",
-    "transcript": "We need to finish the decision engine MVP today.",
-    "keywords": ["decision engine", "mvp", "deadline"],
-    "confidence": 0.84,
-    "audio_ref": "audio_e2e_001.wav"
-  },
-  "location": {
-    "timestamp": "2026-04-29T15:00:00Z",
-    "latitude": 35.7595,
-    "longitude": -5.834,
-    "place_label": "home",
-    "zone_type": "home"
-  }
-}
-```
-
-Copy-paste command:
-
-```bash
-printf '%s\n' '{"context_id":"ctx_e2e_001","user_id":"user_001","created_at":"2026-04-29T15:00:00Z","vision":{"timestamp":"2026-04-29T15:00:00Z","objects":["laptop","desk","bottle"],"scene_description":"User is sitting at a desk and working on a laptop with a bottle nearby.","confidence":0.88,"media_ref":"capture_e2e_001.jpg"},"audio":{"timestamp":"2026-04-29T15:00:00Z","transcript":"We need to finish the decision engine MVP today.","keywords":["decision engine","mvp","deadline"],"confidence":0.84,"audio_ref":"audio_e2e_001.wav"},"location":{"timestamp":"2026-04-29T15:00:00Z","latitude":35.7595,"longitude":-5.834,"place_label":"home","zone_type":"home"}}' | docker exec -i kafka /opt/kafka/bin/kafka-console-producer.sh --bootstrap-server localhost:9092 --topic normalized-context
-```
-
-### What You Should Observe
-
-In the Spark logs, you should see messages like:
-
-```text
-Processing Kafka message batch_id=... row_number=... context_id=ctx_e2e_001 user_id=user_001
-Significance result context_id=ctx_e2e_001 user_id=user_001 should_call_llm=True reason=no_last_significant_context
-LLM completed context_id=ctx_e2e_001 user_id=user_001 activity=...
-Decision saved context_id=ctx_e2e_001 user_id=user_001 decision_id=... decision_type=... actions_count=...
-```
-
-In MongoDB, the event should appear in:
-
-- `raw_context_events`
-- `normalized_contexts`
-- `user_state`
-- `decisions_history`
-
-Depending on the LLM interpretation and deterministic rules, you may also see documents in:
-
-- `notifications`
-- `activities`
-- `meetings`
-
-If a publishable action is produced, it is sent to the `decision.actions` Kafka topic.
-Read that topic with:
-
-```bash
-docker exec -it kafka /opt/kafka/bin/kafka-console-consumer.sh \
-  --bootstrap-server localhost:9092 \
-  --topic decision.actions \
-  --from-beginning
-```
-
-## 3. How to Add a New Rule
-
-### Where Rules Live
-
-Rules are in:
-
-```text
-Decision_engine/rules/
-```
-
-Current implemented rules include:
-
-- `break_rule.py`
-- `hydration_rule.py`
-- `meeting_rule.py`
-- `anti_spam_rule.py`
-
-The rule engine is in:
-
-```text
-Decision_engine/pipeline/rule_engine.py
-```
-
-### Rule Structure
-
-Every rule extends `Rule` and implements `evaluate()`.
-
-Base interface:
-
-```python
-class Rule(ABC):
-    rule_name = "base_rule"
-
-    @abstractmethod
-    def evaluate(
-        self,
-        context: NormalizedContext,
-        interpretation: LLMInterpretation,
-        state: UserState,
-    ) -> RuleResult:
-        raise NotImplementedError
-```
-
-The method receives:
-
-- `context`: normalized event data.
-- `interpretation`: LLM interpretation of the context.
-- `state`: current user state.
-
-It returns a `RuleResult`.
-
-### Example: Hydration Rule
-
-`Decision_engine/rules/hydration_rule.py` triggers only when:
-
-- the activity is not `break`, `rest`, or `unknown`;
-- the current session is longer than 90 minutes;
-- a hydration reminder was not sent in the last 90 minutes.
-
-Simplified example:
-
-```python
-from Decision_engine.models.rule_result import RuleResult
-from Decision_engine.rules.base import Rule
-
-
-class HydrationReminderRule(Rule):
-    rule_name = "hydration_reminder_rule"
-
-    def evaluate(self, context, interpretation, state):
-        if interpretation.activity in ("break", "rest", "unknown"):
-            return RuleResult(rule_name=self.rule_name)
-
-        if state.current_session_duration_minutes <= 90:
-            return RuleResult(rule_name=self.rule_name)
-
-        return RuleResult(
-            rule_name=self.rule_name,
-            triggered=True,
-            priority="low",
-            action_type="send_notification",
-            reason="User has been active for more than 90 minutes without a recent hydration reminder.",
-            payload={
-                "notification_type": "hydration_reminder",
-                "message": "Remember to drink some water.",
-            },
-        )
-```
-
-### Connect the Rule in `rule_engine.py`
-
-Import your rule:
-
-```python
-from Decision_engine.rules.my_new_rule import MyNewRule
-```
-
-Add it to the default rule list:
-
-```python
-self.rules = rules or [
-    BreakReminderRule(),
-    HydrationReminderRule(),
-    MeetingRule(),
-    MyNewRule(),
-]
-```
-
-Keep in mind that `AntiSpamRule` runs after the regular rules and can block notification results.
-
-### Test the Rule
-
-Add or update tests in:
-
-```text
-tests/unit/test_rule_engine.py
-```
-
-Run:
-
-```bash
-PYTHONDONTWRITEBYTECODE=1 python -m unittest tests.unit.test_rule_engine
-```
-
-Run all unit tests before finishing:
-
-```bash
-PYTHONDONTWRITEBYTECODE=1 python -m unittest discover -s tests/unit
-```
-
-## 4. How to Read Logs
-
-### Enable Logs
-
-Logging uses Python standard `logging`.
-The level is controlled with `LOG_LEVEL`.
-
-Common values:
-
-```bash
-LOG_LEVEL=INFO
-LOG_LEVEL=DEBUG
-```
-
-Run Spark with logs:
-
-```bash
-LOG_LEVEL=INFO python -m Decision_engine.app.main_spark_processor \
-  --checkpoint-location ./checkpoints/decision-engine-local
-```
-
-Use debug logs when you need more detail:
-
-```bash
-LOG_LEVEL=DEBUG python -m Decision_engine.app.main_spark_processor \
-  --checkpoint-location ./checkpoints/decision-engine-debug
-```
-
-### Important Log Lines
-
-When Spark receives a Kafka row:
-
-```text
-Processing Kafka message batch_id=... row_number=... context_id=... user_id=...
-```
-
-When the significance detector decides whether to call the LLM:
-
-```text
-Significance result context_id=... user_id=... should_call_llm=... reason=... reasons=...
-```
-
-When the LLM returns an interpretation:
-
-```text
-LLM completed context_id=... user_id=... activity=... confidence=... memory_worthy=...
-```
-
-When a decision is saved:
-
-```text
-Decision saved context_id=... user_id=... decision_id=... decision_type=... actions_count=...
-```
-
-When an action is published:
-
-```text
-Action published decision_id=... context_id=... action_type=...
-```
-
-### Diagnose Problems with Logs
-
-If there is no `Processing Kafka message` log:
-
-- Spark is not receiving messages from Kafka.
-- Check that Spark was started before publishing the message.
-- Check the topic name: `normalized-context`.
-- Check `KAFKA_BOOTSTRAP_SERVERS=localhost:29092`.
-
-If you see `Failed to parse Kafka message`:
-
-- The Kafka value is not valid JSON.
-- The Kafka value is a JSON list instead of one JSON object.
-- Send exactly one JSON object per Kafka message.
-
-If you see `Validation result ... is_valid=False`:
-
-- The payload is missing `context_id`, `user_id`, or `created_at`.
-- One of the timestamps is invalid.
-- A section such as `vision`, `audio`, or `location` is present but not an object.
-
-If you see `Significance result ... should_call_llm=False`:
-
-- The event was stored as raw and normalized.
-- The event was considered duplicate or low-signal.
-- The processor updates `last_seen_at` and stops before calling the LLM.
-
-If you see an LLM error:
-
-- Check that `GROQ_API_KEY` is exported.
-- Check internet access.
-- Check `GROQ_MODEL`.
-- The processor falls back to `unknown` if LLM interpretation fails after retries.
-
-## 5. How to Check MongoDB
-
-### Open `mongosh`
-
-```bash
-docker exec -it mongodb mongosh \
-  "mongodb://admin:admin123@localhost:27017/assistant_db?authSource=admin"
-```
-
-### Important Collections
-
-```text
-raw_context_events
-normalized_contexts
-user_state
-decisions_history
-notifications
-```
-
-Other implemented collections:
-
-```text
-activities
-meetings
-daily_summaries
-```
-
-### Useful Queries
-
-Show collections:
-
-```javascript
-show collections
-```
-
-Count documents:
-
-```javascript
-db.raw_context_events.countDocuments()
-db.normalized_contexts.countDocuments()
-db.user_state.countDocuments()
-db.decisions_history.countDocuments()
-db.notifications.countDocuments()
-```
-
-Find the raw event:
-
-```javascript
-db.raw_context_events.find({ context_id: "ctx_e2e_001" }).pretty()
-```
-
-Find the normalized context:
-
-```javascript
-db.normalized_contexts.find({ context_id: "ctx_e2e_001" }).pretty()
-```
-
-Find the user state:
-
-```javascript
-db.user_state.find({ user_id: "user_001" }).pretty()
-```
-
-Find the decision created from an event:
-
-```javascript
-db.decisions_history.find({ source_context_id: "ctx_e2e_001" }).pretty()
-```
-
-Find notifications created from an event:
-
-```javascript
-db.notifications.find({ source_context_id: "ctx_e2e_001" }).pretty()
-```
-
-### Check Whether an Event Was Processed
-
-Run these queries in order:
-
-```javascript
-db.raw_context_events.find({ context_id: "ctx_e2e_001" }, { context_id: 1, user_id: 1, status: 1, errors: 1 }).pretty()
-```
-
-Expected for a valid received event:
-
-```text
-status: "received"
-errors: []
-```
-
-Check normalization:
-
-```javascript
-db.normalized_contexts.find({ context_id: "ctx_e2e_001" }).pretty()
-```
-
-If this is empty, the event did not pass validation.
-
-Check decision history:
-
-```javascript
-db.decisions_history.find({ source_context_id: "ctx_e2e_001" }).pretty()
-```
-
-If this is empty but `normalized_contexts` contains the event, the event was probably considered not significant.
-Confirm with the Spark log line:
-
-```text
-Significance result ... should_call_llm=False
-```
-
-## 6. Troubleshooting
-
-### Kafka Does Not Receive Messages
-
-Check containers:
-
-```bash
-docker ps --filter name=kafka
-```
-
-Check topics:
+Lister les topics:
 
 ```bash
 docker exec kafka /opt/kafka/bin/kafka-topics.sh \
@@ -641,132 +304,313 @@ docker exec kafka /opt/kafka/bin/kafka-topics.sh \
   --list
 ```
 
-Publish a simple valid event:
+Lire `normalized-context`:
 
 ```bash
-printf '%s\n' '{"context_id":"ctx_ping_001","user_id":"user_001","created_at":"2026-04-29T15:00:00Z"}' | docker exec -i kafka /opt/kafka/bin/kafka-console-producer.sh --bootstrap-server localhost:9092 --topic normalized-context
-```
-
-Read the topic:
-
-```bash
-docker exec -it kafka /opt/kafka/bin/kafka-console-consumer.sh \
+docker exec -i kafka /opt/kafka/bin/kafka-console-consumer.sh \
   --bootstrap-server localhost:9092 \
   --topic normalized-context \
   --from-beginning \
-  --max-messages 1
+  --max-messages 5
 ```
 
-### Spark Processes Nothing
-
-The implemented Spark reader uses:
-
-```python
-.option("startingOffsets", "latest")
-```
-
-That means Spark reads messages published after the streaming query starts.
-
-Use this order:
-
-1. Start Kafka and MongoDB.
-2. Start Spark.
-3. Publish the Kafka event.
-
-If you published first, publish a new message with a new `context_id`.
-
-### MongoDB Is Empty
-
-Check that MongoDB is running:
+Lire les actions:
 
 ```bash
-docker ps --filter name=mongodb
+docker exec -i kafka /opt/kafka/bin/kafka-console-consumer.sh \
+  --bootstrap-server localhost:9092 \
+  --topic decision.actions \
+  --from-beginning \
+  --max-messages 5
 ```
 
-Check that the app points to the local MongoDB container:
+## 9. Vérifier MongoDB
+
+Ouvrir Mongo shell:
 
 ```bash
-echo "$MONGO_URI"
-echo "$MONGO_DATABASE"
+docker exec -it mongodb mongosh "mongodb://admin:admin123@localhost:27017/admin"
 ```
 
-Expected local values:
+Puis:
+
+```javascript
+use assistant_db
+
+db.raw_context_events.countDocuments()
+db.normalized_contexts.countDocuments()
+db.decisions_history.countDocuments()
+db.user_state.countDocuments()
+db.notifications.countDocuments()
+
+db.raw_context_events.find().limit(3).pretty()
+db.normalized_contexts.find().limit(3).pretty()
+db.decisions_history.find().limit(3).pretty()
+```
+
+Dans Mongo Express:
 
 ```text
-mongodb://admin:admin123@localhost:27017
+Database: assistant_db
+Collections:
+- raw_context_events
+- normalized_contexts
+- user_state
+- decisions_history
+- notifications
+- activities
+- meetings
+- daily_summaries
+```
+
+## 10. Logs À Regarder
+
+Context builder:
+
+```bash
+tail -f logs/context_builder.log
+```
+
+Tu dois voir:
+
+```text
+Raw data stream configured topic=video_stream
+Raw data stream configured topic=audio_stream
+Raw data stream configured topic=location_stream
+Context built
+Context published to Kafka
+```
+
+Decision Engine:
+
+```bash
+tail -f logs/decision_engine.log
+```
+
+Tu dois voir:
+
+```text
+Decision Engine startup
+Building Kafka stream topic=normalized-context
+Processing Spark batch
+Kafka message received
+Kafka message parsed
+Kafka message passes validation
+Decision generated
+Data written to MongoDB
+```
+
+## 11. Nettoyer Et Repartir De Zéro
+
+Attention: cette commande supprime Kafka, MongoDB, ChromaDB et les checkpoints locaux.
+
+```bash
+docker compose down -v
+rm -rf chroma checkpoints logs
+mkdir -p chroma checkpoints/context_builder checkpoints/decision_engine logs
+docker compose up -d kafka mongodb kafka-ui mongo-express
+```
+
+Puis:
+
+```bash
+./scripts/test_decision_engine_consumes_context.sh
+```
+
+## 12. Problèmes Fréquents
+
+### Kafka reçoit des messages mais MongoDB reste vide
+
+Causes probables:
+
+- Decision Engine a crashé.
+- `checkpoints/decision_engine` contient déjà des offsets.
+- ChromaDB a un ancien schema incompatible.
+- Le message Kafka est invalide.
+
+Solution rapide:
+
+```bash
+rm -rf checkpoints/decision_engine
+rm -rf chroma
+mkdir -p chroma
+./scripts/replay_normalized_context_to_mongo.sh
+```
+
+Puis lire:
+
+```bash
+tail -n 200 logs/decision_engine.log
+```
+
+### Erreur ChromaDB: `no such column: collections.topic`
+
+Cause:
+
+```text
+Le dossier ./chroma a été créé par une autre version de ChromaDB.
+```
+
+Solution:
+
+```bash
+rm -rf chroma
+mkdir -p chroma
+```
+
+Puis relancer.
+
+### Le même message apparaît plusieurs fois dans Kafka
+
+C'est normal si `context_ingestion.producers.run_producers` tourne.
+Les producers relisent périodiquement les mêmes fichiers de test.
+
+Arrêter avec `Ctrl+C`.
+
+### Spark ne relit pas les anciens messages
+
+Supprimer le checkpoint du consumer:
+
+```bash
+rm -rf checkpoints/decision_engine
+```
+
+Ou utiliser:
+
+```bash
+./scripts/replay_normalized_context_to_mongo.sh
+```
+
+### Mongo Express ne montre rien
+
+Vérifier la bonne database:
+
+```text
 assistant_db
 ```
 
-Check Spark logs for:
+Pas `admin`.
+
+## 13. Commandes Utiles
+
+Lancer tout:
+
+```bash
+./scripts/run_all.sh
+```
+
+Lancer seulement le context builder:
+
+```bash
+./scripts/run_context_builder.sh
+```
+
+Lancer seulement le Decision Engine:
+
+```bash
+./scripts/run_decision_engine.sh
+```
+
+Publier un message normalisé de test:
+
+```bash
+python -m context_ingestion.publish_sample_context
+```
+
+Lancer les producers bruts:
+
+```bash
+python -m context_ingestion.producers.run_producers
+```
+
+Rejouer Kafka vers MongoDB:
+
+```bash
+./scripts/replay_normalized_context_to_mongo.sh
+```
+
+Test complet minimal:
+
+```bash
+./scripts/test_decision_engine_consumes_context.sh
+```
+
+## 14. Contrat Pour Backend Et Chatbot
+
+### Backend
+
+Le backend ne doit pas consommer les topics bruts `video_stream`, `audio_stream`, `location_stream`.
+
+Il doit utiliser:
 
 ```text
-Mongo save_raw_context_event
-Mongo save_normalized_context
-Mongo save_decision_history
+MongoDB assistant_db.*
+Kafka decision.actions
 ```
 
-If `raw_context_events` has a document with `status: "invalid"`, inspect the `errors` field.
+Endpoints recommandés:
 
-### Checkpoint Problems
-
-Spark checkpoints store streaming progress.
-If you reuse a checkpoint, Spark may skip messages it already processed.
-
-For a fresh local test, use a new checkpoint path:
-
-```bash
-LOG_LEVEL=INFO python -m Decision_engine.app.main_spark_processor \
-  --checkpoint-location ./checkpoints/decision-engine-e2e-fresh
+```text
+GET /contexts
+GET /contexts/{context_id}
+GET /decisions
+GET /notifications
+GET /state/{user_id}
+POST /chat
 ```
 
-If you intentionally want to restart from a clean checkpoint, stop Spark and remove only the test checkpoint directory you created:
+### Chatbot
 
-```bash
-rm -rf ./checkpoints/decision-engine-e2e-fresh
+Le chatbot doit poser ses questions au backend.
+
+Exemples de questions supportées:
+
+```text
+Qu'est-ce que je fais maintenant ?
+Pourquoi cette notification a été générée ?
+Quels sont les derniers contextes détectés ?
+Résume ma dernière session.
 ```
 
-Do not delete production checkpoints unless you understand the replay impact.
+Sources:
 
-### `startingOffsets` Confusion
-
-This project currently hardcodes `startingOffsets="latest"` in `Decision_engine/kafka/spark_consumer.py`.
-
-Practical impact:
-
-- Messages already in Kafka before Spark starts are not read by a new streaming query.
-- For end-to-end tests, always publish after Spark starts.
-- If nothing happens, send another event with a new `context_id`.
-
-### Groq API Key Is Missing
-
-If `GROQ_API_KEY` is not exported, the real processor cannot create `GroqLLMClient`.
-
-Check:
-
-```bash
-echo "$GROQ_API_KEY"
+```text
+MongoDB decisions_history
+MongoDB normalized_contexts
+MongoDB user_state
+ChromaDB memory
 ```
 
-Load your `.env`:
+### Frontend
 
-```bash
-set -a
-source .env
-set +a
+Le frontend peut afficher:
+
+- dernier contexte reçu
+- activité détectée
+- notifications
+- historique des décisions
+- état utilisateur
+- chat avec le chatbot
+
+## 15. Résumé Des Topics
+
+```text
+video_stream          données visuelles brutes analysées
+audio_stream          données audio transcrites/analysées
+location_stream       localisation simulée
+normalized-context    contexte final consommé par Decision Engine
+decision.actions      actions publiées par Decision Engine
 ```
 
-Use a placeholder only in documentation. Use your real key only in your local environment.
+## 16. Résumé Des Collections MongoDB
 
-## Quick Summary
-
-This guide covers the complete local workflow for the Decision Engine:
-
-- install Python dependencies;
-- start Kafka and MongoDB with Docker Compose;
-- create Kafka topics;
-- configure environment variables safely;
-- run the Spark streaming processor;
-- publish a valid Kafka JSON event;
-- verify processing through logs, MongoDB, and the `decision.actions` topic;
-- add and test deterministic rules;
-- diagnose common Kafka, Spark, MongoDB, checkpoint, and `startingOffsets` issues.
+```text
+raw_context_events    messages Kafka reçus
+normalized_contexts   contexte interne normalisé
+user_state            état courant utilisateur
+activities            activités détectées
+meetings              réunions détectées
+notifications         notifications à envoyer
+decisions_history     historique complet des décisions
+daily_summaries       résumés journaliers
+```

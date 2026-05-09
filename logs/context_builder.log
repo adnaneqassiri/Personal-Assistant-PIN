@@ -1,0 +1,71 @@
+[context-builder] bootstrap=localhost:29092 topic=normalized-context
+2026-05-09 23:42:04,035 INFO kafka.conn - <BrokerConnection client_id=context-ingestion-topic-bootstrap, node_id=bootstrap-0 host=localhost:29092 <connecting> [IPv4 ('127.0.0.1', 29092)]>: connecting to localhost:29092 [('127.0.0.1', 29092) IPv4]
+2026-05-09 23:42:04,036 INFO kafka.conn - <BrokerConnection client_id=context-ingestion-topic-bootstrap, node_id=bootstrap-0 host=localhost:29092 <checking_api_versions_recv> [IPv4 ('127.0.0.1', 29092)]>: Broker version identified as 2.6
+2026-05-09 23:42:04,036 INFO kafka.conn - <BrokerConnection client_id=context-ingestion-topic-bootstrap, node_id=bootstrap-0 host=localhost:29092 <connected> [IPv4 ('127.0.0.1', 29092)]>: Connection complete.
+2026-05-09 23:42:04,038 INFO kafka.conn - <BrokerConnection client_id=context-ingestion-topic-bootstrap, node_id=1 host=localhost:29092 <connecting> [IPv4 ('127.0.0.1', 29092)]>: connecting to localhost:29092 [('127.0.0.1', 29092) IPv4]
+2026-05-09 23:42:04,038 INFO kafka.conn - <BrokerConnection client_id=context-ingestion-topic-bootstrap, node_id=1 host=localhost:29092 <connected> [IPv4 ('127.0.0.1', 29092)]>: Connection complete.
+2026-05-09 23:42:04,038 INFO kafka.conn - <BrokerConnection client_id=context-ingestion-topic-bootstrap, node_id=bootstrap-0 host=localhost:29092 <connected> [IPv4 ('127.0.0.1', 29092)]>: Closing connection. 
+2026-05-09 23:42:04,042 INFO __main__ - Kafka topics already exist topics=['video_stream', 'audio_stream', 'location_stream', 'normalized-context']
+2026-05-09 23:42:04,042 INFO kafka.conn - <BrokerConnection client_id=context-ingestion-topic-bootstrap, node_id=1 host=localhost:29092 <connected> [IPv4 ('127.0.0.1', 29092)]>: Closing connection. 
+2026-05-09 23:42:04,218 INFO kafka.conn - <BrokerConnection client_id=context-ingestion-topic-bootstrap, node_id=bootstrap-0 host=localhost:29092 <connecting> [IPv4 ('127.0.0.1', 29092)]>: connecting to localhost:29092 [('127.0.0.1', 29092) IPv4]
+2026-05-09 23:42:04,221 INFO kafka.conn - <BrokerConnection client_id=context-ingestion-topic-bootstrap, node_id=bootstrap-0 host=localhost:29092 <checking_api_versions_recv> [IPv4 ('127.0.0.1', 29092)]>: Broker version identified as 2.6
+2026-05-09 23:42:04,221 INFO kafka.conn - <BrokerConnection client_id=context-ingestion-topic-bootstrap, node_id=bootstrap-0 host=localhost:29092 <connected> [IPv4 ('127.0.0.1', 29092)]>: Connection complete.
+2026-05-09 23:42:04,223 INFO kafka.conn - <BrokerConnection client_id=context-ingestion-topic-bootstrap, node_id=1 host=localhost:29092 <connecting> [IPv4 ('127.0.0.1', 29092)]>: connecting to localhost:29092 [('127.0.0.1', 29092) IPv4]
+2026-05-09 23:42:04,223 INFO kafka.conn - <BrokerConnection client_id=context-ingestion-topic-bootstrap, node_id=1 host=localhost:29092 <connected> [IPv4 ('127.0.0.1', 29092)]>: Connection complete.
+2026-05-09 23:42:04,223 INFO kafka.conn - <BrokerConnection client_id=context-ingestion-topic-bootstrap, node_id=bootstrap-0 host=localhost:29092 <connected> [IPv4 ('127.0.0.1', 29092)]>: Closing connection. 
+2026-05-09 23:42:04,224 INFO context_ingestion.kafka.topics - Kafka topics already exist topics=['video_stream', 'audio_stream', 'location_stream', 'normalized-context']
+2026-05-09 23:42:04,224 INFO kafka.conn - <BrokerConnection client_id=context-ingestion-topic-bootstrap, node_id=1 host=localhost:29092 <connected> [IPv4 ('127.0.0.1', 29092)]>: Closing connection. 
+26/05/09 23:42:04 WARN Utils: Your hostname, Adnane resolves to a loopback address: 127.0.1.1; using 192.168.1.8 instead (on interface wlp4s0)
+26/05/09 23:42:04 WARN Utils: Set SPARK_LOCAL_IP if you need to bind to another address
+:: loading settings :: url = jar:file:/home/adnane/miniconda3/envs/decision_engine/lib/python3.10/site-packages/pyspark/jars/ivy-2.5.1.jar!/org/apache/ivy/core/settings/ivysettings.xml
+Ivy Default Cache set to: /home/adnane/.ivy2/cache
+The jars for the packages stored in: /home/adnane/.ivy2/jars
+org.apache.spark#spark-sql-kafka-0-10_2.12 added as a dependency
+:: resolving dependencies :: org.apache.spark#spark-submit-parent-8e68100d-a40d-429f-80da-85b709ea3d51;1.0
+	confs: [default]
+	found org.apache.spark#spark-sql-kafka-0-10_2.12;3.5.1 in central
+	found org.apache.spark#spark-token-provider-kafka-0-10_2.12;3.5.1 in central
+	found org.apache.kafka#kafka-clients;3.4.1 in central
+	found org.lz4#lz4-java;1.8.0 in central
+	found org.xerial.snappy#snappy-java;1.1.10.3 in central
+	found org.slf4j#slf4j-api;2.0.7 in central
+	found org.apache.hadoop#hadoop-client-runtime;3.3.4 in central
+	found org.apache.hadoop#hadoop-client-api;3.3.4 in central
+	found commons-logging#commons-logging;1.1.3 in central
+	found com.google.code.findbugs#jsr305;3.0.0 in central
+	found org.apache.commons#commons-pool2;2.11.1 in central
+:: resolution report :: resolve 271ms :: artifacts dl 7ms
+	:: modules in use:
+	com.google.code.findbugs#jsr305;3.0.0 from central in [default]
+	commons-logging#commons-logging;1.1.3 from central in [default]
+	org.apache.commons#commons-pool2;2.11.1 from central in [default]
+	org.apache.hadoop#hadoop-client-api;3.3.4 from central in [default]
+	org.apache.hadoop#hadoop-client-runtime;3.3.4 from central in [default]
+	org.apache.kafka#kafka-clients;3.4.1 from central in [default]
+	org.apache.spark#spark-sql-kafka-0-10_2.12;3.5.1 from central in [default]
+	org.apache.spark#spark-token-provider-kafka-0-10_2.12;3.5.1 from central in [default]
+	org.lz4#lz4-java;1.8.0 from central in [default]
+	org.slf4j#slf4j-api;2.0.7 from central in [default]
+	org.xerial.snappy#snappy-java;1.1.10.3 from central in [default]
+	---------------------------------------------------------------------
+	|                  |            modules            ||   artifacts   |
+	|       conf       | number| search|dwnlded|evicted|| number|dwnlded|
+	---------------------------------------------------------------------
+	|      default     |   11  |   0   |   0   |   0   ||   11  |   0   |
+	---------------------------------------------------------------------
+:: retrieving :: org.apache.spark#spark-submit-parent-8e68100d-a40d-429f-80da-85b709ea3d51
+	confs: [default]
+	0 artifacts copied, 11 already retrieved (0kB/7ms)
+26/05/09 23:42:05 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+Setting default log level to "WARN".
+To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
+2026-05-09 23:42:06,812 INFO __main__ - Raw data stream configured topic=video_stream bootstrap_servers=localhost:29092
+2026-05-09 23:42:07,846 INFO __main__ - Raw data stream configured topic=audio_stream bootstrap_servers=localhost:29092
+2026-05-09 23:42:07,923 INFO __main__ - Raw data stream configured topic=location_stream bootstrap_servers=localhost:29092
+2026-05-09 23:42:08,153 INFO py4j.java_gateway - Callback Server Starting
+2026-05-09 23:42:08,153 INFO py4j.java_gateway - Socket listening on ('127.0.0.1', 40311)
+26/05/09 23:42:08 WARN ResolveWriteToStream: spark.sql.adaptive.enabled is not supported in streaming DataFrames/Datasets and will be disabled.
+2026-05-09 23:42:08,284 INFO __main__ - Context builder started bootstrap_servers=localhost:29092 context_topic=normalized-context checkpoint=./checkpoints/context_builder
+26/05/09 23:42:08 WARN AdminClientConfig: These configurations '[key.deserializer, value.deserializer, enable.auto.commit, max.poll.records, auto.offset.reset]' were supplied but are not used yet.
+26/05/09 23:42:08 WARN AdminClientConfig: These configurations '[key.deserializer, value.deserializer, enable.auto.commit, max.poll.records, auto.offset.reset]' were supplied but are not used yet.
+26/05/09 23:42:08 WARN AdminClientConfig: These configurations '[key.deserializer, value.deserializer, enable.auto.commit, max.poll.records, auto.offset.reset]' were supplied but are not used yet.

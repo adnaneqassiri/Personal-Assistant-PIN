@@ -20,6 +20,8 @@ export KAFKA_AUTO_OFFSET_RESET="${KAFKA_AUTO_OFFSET_RESET:-earliest}"
 export NOTIFICATION_TOPIC="${NOTIFICATION_TOPIC:-decision.actions}"
 export KAFKA_ACTIONS_TOPIC="${KAFKA_ACTIONS_TOPIC:-$NOTIFICATION_TOPIC}"
 
+mkdir -p logs
+
 pids=()
 
 cleanup() {
@@ -35,12 +37,12 @@ cleanup() {
 
 trap cleanup INT TERM EXIT
 
-echo "[run-all] starting context builder"
-"$ROOT_DIR/scripts/run_context_builder.sh" &
+echo "[run-all] starting context builder log=logs/context_builder.log"
+"$ROOT_DIR/scripts/run_context_builder.sh" 2>&1 | tee logs/context_builder.log &
 pids+=("$!")
 
-echo "[run-all] starting decision engine"
-"$ROOT_DIR/scripts/run_decision_engine.sh" &
+echo "[run-all] starting decision engine log=logs/decision_engine.log"
+"$ROOT_DIR/scripts/run_decision_engine.sh" 2>&1 | tee logs/decision_engine.log &
 pids+=("$!")
 
 echo "[run-all] running. Press Ctrl+C to stop."

@@ -1,0 +1,284 @@
+[decision-engine] bootstrap=localhost:29092 topic=normalized-context offset=earliest
+2026-05-09 23:42:04,035 INFO kafka.conn - <BrokerConnection client_id=context-ingestion-topic-bootstrap, node_id=bootstrap-0 host=localhost:29092 <connecting> [IPv4 ('127.0.0.1', 29092)]>: connecting to localhost:29092 [('127.0.0.1', 29092) IPv4]
+2026-05-09 23:42:04,037 INFO kafka.conn - <BrokerConnection client_id=context-ingestion-topic-bootstrap, node_id=bootstrap-0 host=localhost:29092 <checking_api_versions_recv> [IPv4 ('127.0.0.1', 29092)]>: Broker version identified as 2.6
+2026-05-09 23:42:04,037 INFO kafka.conn - <BrokerConnection client_id=context-ingestion-topic-bootstrap, node_id=bootstrap-0 host=localhost:29092 <connected> [IPv4 ('127.0.0.1', 29092)]>: Connection complete.
+2026-05-09 23:42:04,039 INFO kafka.conn - <BrokerConnection client_id=context-ingestion-topic-bootstrap, node_id=1 host=localhost:29092 <connecting> [IPv4 ('127.0.0.1', 29092)]>: connecting to localhost:29092 [('127.0.0.1', 29092) IPv4]
+2026-05-09 23:42:04,039 INFO kafka.conn - <BrokerConnection client_id=context-ingestion-topic-bootstrap, node_id=1 host=localhost:29092 <connected> [IPv4 ('127.0.0.1', 29092)]>: Connection complete.
+2026-05-09 23:42:04,039 INFO kafka.conn - <BrokerConnection client_id=context-ingestion-topic-bootstrap, node_id=bootstrap-0 host=localhost:29092 <connected> [IPv4 ('127.0.0.1', 29092)]>: Closing connection. 
+2026-05-09 23:42:04,042 INFO context_ingestion.kafka.topics - Kafka topics already exist topics=['normalized-context']
+2026-05-09 23:42:04,042 INFO kafka.conn - <BrokerConnection client_id=context-ingestion-topic-bootstrap, node_id=1 host=localhost:29092 <connected> [IPv4 ('127.0.0.1', 29092)]>: Closing connection. 
+2026-05-09 23:42:04,184 INFO Decision_engine.app.bootstrap - Decision Engine startup kafka_bootstrap_servers=localhost:29092 consumed_topic=normalized-context auto_offset_reset=earliest notification_topic=decision.actions
+2026-05-09 23:42:04,184 INFO Decision_engine.app.bootstrap - Decision Engine startup mongo_uri=mongodb://localhost:27017 mongo_database=assistant_db mongo_collections=['raw_context_events', 'normalized_contexts', 'user_state', 'activities', 'meetings', 'notifications', 'decisions_history', 'daily_summaries']
+2026-05-09 23:42:04,184 INFO Decision_engine.app.bootstrap - Decision Engine startup chroma_path=./chroma
+2026-05-09 23:42:04,787 INFO kafka.conn - <BrokerConnection client_id=kafka-python-producer-1, node_id=bootstrap-0 host=localhost:29092 <connecting> [IPv4 ('127.0.0.1', 29092)]>: connecting to localhost:29092 [('127.0.0.1', 29092) IPv4]
+2026-05-09 23:42:04,790 INFO kafka.conn - <BrokerConnection client_id=kafka-python-producer-1, node_id=bootstrap-0 host=localhost:29092 <checking_api_versions_recv> [IPv4 ('127.0.0.1', 29092)]>: Broker version identified as 2.6
+2026-05-09 23:42:04,790 INFO kafka.conn - <BrokerConnection client_id=kafka-python-producer-1, node_id=bootstrap-0 host=localhost:29092 <connected> [IPv4 ('127.0.0.1', 29092)]>: Connection complete.
+26/05/09 23:42:05 WARN Utils: Your hostname, Adnane resolves to a loopback address: 127.0.1.1; using 192.168.1.8 instead (on interface wlp4s0)
+26/05/09 23:42:05 WARN Utils: Set SPARK_LOCAL_IP if you need to bind to another address
+:: loading settings :: url = jar:file:/home/adnane/miniconda3/envs/decision_engine/lib/python3.10/site-packages/pyspark/jars/ivy-2.5.1.jar!/org/apache/ivy/core/settings/ivysettings.xml
+Ivy Default Cache set to: /home/adnane/.ivy2/cache
+The jars for the packages stored in: /home/adnane/.ivy2/jars
+org.apache.spark#spark-sql-kafka-0-10_2.12 added as a dependency
+:: resolving dependencies :: org.apache.spark#spark-submit-parent-79b233b8-3fce-453d-b507-c52bc06d5e66;1.0
+	confs: [default]
+	found org.apache.spark#spark-sql-kafka-0-10_2.12;3.5.1 in central
+	found org.apache.spark#spark-token-provider-kafka-0-10_2.12;3.5.1 in central
+	found org.apache.kafka#kafka-clients;3.4.1 in central
+	found org.lz4#lz4-java;1.8.0 in central
+	found org.xerial.snappy#snappy-java;1.1.10.3 in central
+	found org.slf4j#slf4j-api;2.0.7 in central
+	found org.apache.hadoop#hadoop-client-runtime;3.3.4 in central
+	found org.apache.hadoop#hadoop-client-api;3.3.4 in central
+	found commons-logging#commons-logging;1.1.3 in central
+	found com.google.code.findbugs#jsr305;3.0.0 in central
+	found org.apache.commons#commons-pool2;2.11.1 in central
+:: resolution report :: resolve 296ms :: artifacts dl 8ms
+	:: modules in use:
+	com.google.code.findbugs#jsr305;3.0.0 from central in [default]
+	commons-logging#commons-logging;1.1.3 from central in [default]
+	org.apache.commons#commons-pool2;2.11.1 from central in [default]
+	org.apache.hadoop#hadoop-client-api;3.3.4 from central in [default]
+	org.apache.hadoop#hadoop-client-runtime;3.3.4 from central in [default]
+	org.apache.kafka#kafka-clients;3.4.1 from central in [default]
+	org.apache.spark#spark-sql-kafka-0-10_2.12;3.5.1 from central in [default]
+	org.apache.spark#spark-token-provider-kafka-0-10_2.12;3.5.1 from central in [default]
+	org.lz4#lz4-java;1.8.0 from central in [default]
+	org.slf4j#slf4j-api;2.0.7 from central in [default]
+	org.xerial.snappy#snappy-java;1.1.10.3 from central in [default]
+	---------------------------------------------------------------------
+	|                  |            modules            ||   artifacts   |
+	|       conf       | number| search|dwnlded|evicted|| number|dwnlded|
+	---------------------------------------------------------------------
+	|      default     |   11  |   0   |   0   |   0   ||   11  |   0   |
+	---------------------------------------------------------------------
+:: retrieving :: org.apache.spark#spark-submit-parent-79b233b8-3fce-453d-b507-c52bc06d5e66
+	confs: [default]
+	0 artifacts copied, 11 already retrieved (0kB/6ms)
+26/05/09 23:42:06 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+Setting default log level to "WARN".
+To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
+26/05/09 23:42:06 WARN Utils: Service 'SparkUI' could not bind on port 4040. Attempting port 4041.
+2026-05-09 23:42:07,464 INFO Decision_engine.kafka.spark_consumer - Building Kafka stream topic=normalized-context bootstrap_servers=localhost:29092 auto_offset_reset=earliest
+2026-05-09 23:42:08,299 INFO py4j.java_gateway - Callback Server Starting
+2026-05-09 23:42:08,299 INFO py4j.java_gateway - Socket listening on ('127.0.0.1', 39797)
+2026-05-09 23:42:08,303 INFO Decision_engine.kafka.spark_consumer - Starting Spark streaming source_topic=normalized-context actions_topic=decision.actions auto_offset_reset=earliest checkpoint=./checkpoints/decision_engine once=False
+26/05/09 23:42:08 WARN ResolveWriteToStream: spark.sql.adaptive.enabled is not supported in streaming DataFrames/Datasets and will be disabled.
+26/05/09 23:42:08 WARN AdminClientConfig: These configurations '[key.deserializer, value.deserializer, enable.auto.commit, max.poll.records, auto.offset.reset]' were supplied but are not used yet.
+2026-05-09 23:42:09,399 INFO py4j.clientserver - Python Server ready to receive messages
+2026-05-09 23:42:09,400 INFO py4j.clientserver - Received command c on object id p0
+[Stage 0:>                                                          (0 + 1) / 1]                                                                                2026-05-09 23:42:10,324 INFO Decision_engine.kafka.spark_consumer - Processing Spark batch batch_id=0 message_count=85
+2026-05-09 23:42:10,324 INFO Decision_engine.kafka.spark_consumer - Kafka message received batch_id=0 row_number=1 value_preview={"context_id": "ctx_001778171115", "user_id": "user_001", "created_at": "2026-05-07T18:25:15", "timestamp": "2026-05-07T17:25:15", "scene_description": "", "audio_transcript": "", "location": {"latitude": 35.7595, "longitude": -5.834, "label": "office", "place_label": "office", "zone_type": "work"}, "source": "context_ingestion", "vision": {"objects": [], "scene_description": ""}, "audio": {"transcript": "", "keywords": []}}
+2026-05-09 23:42:10,324 INFO Decision_engine.kafka.spark_consumer - Kafka message parsed batch_id=0 row_number=1 context_id=ctx_001778171115 user_id=user_001 keys=['audio', 'audio_transcript', 'context_id', 'created_at', 'location', 'scene_description', 'source', 'timestamp', 'user_id', 'vision']
+2026-05-09 23:42:10,324 INFO Decision_engine.kafka.spark_consumer - Processing Kafka message batch_id=0 row_number=1 context_id=ctx_001778171115 user_id=user_001
+2026-05-09 23:42:10,324 INFO Decision_engine.pipeline.processor - Start process_event context_id=ctx_001778171115 user_id=user_001
+2026-05-09 23:42:10,325 INFO Decision_engine.storage.repositories - Mongo save_raw_context_event context_id=ctx_001778171115 user_id=user_001 raw_event_id=raw_65b9532041ed4970a07d6d31c707c3bc status=received
+2026-05-09 23:42:10,325 INFO Decision_engine.pipeline.processor - Raw event saved context_id=ctx_001778171115 user_id=user_001 raw_event_ref=raw_65b9532041ed4970a07d6d31c707c3bc
+2026-05-09 23:42:10,326 INFO Decision_engine.pipeline.processor - Validation result context_id=ctx_001778171115 user_id=user_001 is_valid=True errors_count=0
+2026-05-09 23:42:10,326 INFO Decision_engine.pipeline.processor - Kafka message passes validation context_id=ctx_001778171115 user_id=user_001
+2026-05-09 23:42:10,326 INFO Decision_engine.storage.repositories - Mongo save_normalized_context context_id=ctx_001778171115 user_id=user_001
+2026-05-09 23:42:10,326 INFO Decision_engine.pipeline.processor - Normalized context saved context_id=ctx_001778171115 user_id=user_001 context_timestamp=2026-05-07 18:25:15+00:00
+2026-05-09 23:42:10,328 INFO Decision_engine.pipeline.processor - Significance result context_id=ctx_001778171115 user_id=user_001 should_call_llm=True reason=visual_description_changed reasons=['visual_description_changed', 'objects_changed']
+2026-05-09 23:42:10,328 INFO Decision_engine.pipeline.processor - Calling LLM context_id=ctx_001778171115 user_id=user_001
+2026-05-09 23:42:10,861 INFO httpx - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-09 23:42:10,941 INFO Decision_engine.pipeline.processor - LLM completed context_id=ctx_001778171115 user_id=user_001 activity=meeting confidence=0.9 memory_worthy=True
+2026-05-09 23:42:10,941 INFO Decision_engine.pipeline.processor - State updated context_id=ctx_001778171115 user_id=user_001 current_activity=meeting session_minutes=0.0 in_meeting=True
+2026-05-09 23:42:10,942 INFO Decision_engine.pipeline.processor - Meeting result context_id=ctx_001778171115 user_id=user_001 action=append_meeting_transcript summary_required=False meeting_id=meet_a68bccaf0e7044bda381ac3fa59363bb
+2026-05-09 23:42:10,942 INFO Decision_engine.pipeline.processor - Rule engine completed context_id=ctx_001778171115 user_id=user_001 triggered_rules=['meeting_rule']
+2026-05-09 23:42:10,942 INFO Decision_engine.pipeline.processor - Decision generated context_id=ctx_001778171115 user_id=user_001 decision_id=dec_d86ef19974ee4a3387175432f98a04cf decision_type=meeting_update actions_count=1
+2026-05-09 23:42:10,943 INFO Decision_engine.storage.repositories - Mongo upsert_user_state user_id=user_001 current_activity=meeting last_seen_at=2026-05-07 18:25:15+00:00
+2026-05-09 23:42:10,943 INFO Decision_engine.storage.repositories - Mongo save_decision_history decision_id=dec_d86ef19974ee4a3387175432f98a04cf user_id=user_001 source_context_id=ctx_001778171115
+2026-05-09 23:42:10,943 INFO Decision_engine.pipeline.processor - Data written to MongoDB context_id=ctx_001778171115 user_id=user_001 collections=['raw_context_events', 'normalized_contexts', 'user_state', 'decisions_history']
+2026-05-09 23:42:10,943 INFO Decision_engine.pipeline.processor - Decision saved context_id=ctx_001778171115 user_id=user_001 decision_id=dec_d86ef19974ee4a3387175432f98a04cf decision_type=meeting_update actions_count=1
+2026-05-09 23:42:10,944 INFO Decision_engine.pipeline.processor - Publish actions completed decision_id=dec_d86ef19974ee4a3387175432f98a04cf context_id=ctx_001778171115 published_count=0
+2026-05-09 23:42:11,145 INFO Decision_engine.pipeline.processor - Vector memory indexed context_id=ctx_001778171115 user_id=user_001 decision_id=dec_d86ef19974ee4a3387175432f98a04cf
+2026-05-09 23:42:11,146 INFO Decision_engine.kafka.spark_consumer - Processor result batch_id=0 row_number=1 context_id=ctx_001778171115 status=processed significant=True decision_id=dec_d86ef19974ee4a3387175432f98a04cf error=None
+2026-05-09 23:42:11,146 INFO Decision_engine.kafka.spark_consumer - Kafka message received batch_id=0 row_number=2 value_preview={"context_id": "ctx_001778171115", "user_id": "user_001", "created_at": "2026-05-07T18:25:19", "timestamp": "2026-05-07T17:25:15", "scene_description": "A group of business professionals are in a meeting around a table with a presentation.", "audio_transcript": "Modify the dashboard to focus on key metrics before Friday", "location": {"latitude": 35.7595, "longitude": -5.834, "label": "office", "place_label": "office", "zone_type": "work"}, "source": "context_ingestion", "vision": {"timestamp": 
+2026-05-09 23:42:11,146 INFO Decision_engine.kafka.spark_consumer - Kafka message parsed batch_id=0 row_number=2 context_id=ctx_001778171115 user_id=user_001 keys=['audio', 'audio_transcript', 'context_id', 'created_at', 'location', 'scene_description', 'source', 'timestamp', 'user_id', 'vision']
+2026-05-09 23:42:11,146 INFO Decision_engine.kafka.spark_consumer - Processing Kafka message batch_id=0 row_number=2 context_id=ctx_001778171115 user_id=user_001
+2026-05-09 23:42:11,146 INFO Decision_engine.pipeline.processor - Start process_event context_id=ctx_001778171115 user_id=user_001
+2026-05-09 23:42:11,147 INFO Decision_engine.storage.repositories - Mongo save_raw_context_event context_id=ctx_001778171115 user_id=user_001 raw_event_id=raw_5fd1b2bb04594554804c57492a59b439 status=received
+2026-05-09 23:42:11,147 INFO Decision_engine.pipeline.processor - Raw event saved context_id=ctx_001778171115 user_id=user_001 raw_event_ref=raw_5fd1b2bb04594554804c57492a59b439
+2026-05-09 23:42:11,147 INFO Decision_engine.pipeline.processor - Validation result context_id=ctx_001778171115 user_id=user_001 is_valid=True errors_count=0
+2026-05-09 23:42:11,147 INFO Decision_engine.pipeline.processor - Kafka message passes validation context_id=ctx_001778171115 user_id=user_001
+2026-05-09 23:42:11,147 INFO Decision_engine.storage.repositories - Mongo save_normalized_context context_id=ctx_001778171115 user_id=user_001
+2026-05-09 23:42:11,147 INFO Decision_engine.pipeline.processor - Normalized context saved context_id=ctx_001778171115 user_id=user_001 context_timestamp=2026-05-07 18:25:19+00:00
+2026-05-09 23:42:11,148 INFO Decision_engine.pipeline.processor - Significance result context_id=ctx_001778171115 user_id=user_001 should_call_llm=False reason=duplicate_or_low_signal reasons=[]
+2026-05-09 23:42:11,149 INFO Decision_engine.storage.repositories - Mongo upsert_user_state user_id=user_001 current_activity=meeting last_seen_at=2026-05-07 18:25:19+00:00
+2026-05-09 23:42:11,149 INFO Decision_engine.pipeline.processor - Skipping low-signal event context_id=ctx_001778171115 user_id=user_001 last_seen_at=2026-05-07 18:25:19+00:00
+2026-05-09 23:42:11,149 INFO Decision_engine.kafka.spark_consumer - Processor result batch_id=0 row_number=2 context_id=ctx_001778171115 status=not_significant significant=False decision_id=None error=None
+2026-05-09 23:42:11,149 INFO Decision_engine.kafka.spark_consumer - Kafka message received batch_id=0 row_number=3 value_preview={"context_id": "ctx_001778171130", "user_id": "user_001", "created_at": "2026-05-07T18:25:30", "timestamp": "2026-05-07T17:25:30", "scene_description": "", "audio_transcript": "", "location": {"latitude": 35.7595, "longitude": -5.834, "label": "office", "place_label": "office", "zone_type": "work"}, "source": "context_ingestion", "vision": {"objects": [], "scene_description": ""}, "audio": {"transcript": "", "keywords": []}}
+2026-05-09 23:42:11,149 INFO Decision_engine.kafka.spark_consumer - Kafka message parsed batch_id=0 row_number=3 context_id=ctx_001778171130 user_id=user_001 keys=['audio', 'audio_transcript', 'context_id', 'created_at', 'location', 'scene_description', 'source', 'timestamp', 'user_id', 'vision']
+2026-05-09 23:42:11,149 INFO Decision_engine.kafka.spark_consumer - Processing Kafka message batch_id=0 row_number=3 context_id=ctx_001778171130 user_id=user_001
+2026-05-09 23:42:11,149 INFO Decision_engine.pipeline.processor - Start process_event context_id=ctx_001778171130 user_id=user_001
+2026-05-09 23:42:11,149 INFO Decision_engine.storage.repositories - Mongo save_raw_context_event context_id=ctx_001778171130 user_id=user_001 raw_event_id=raw_3e705b2fbb6746adb745676a246cdbdc status=received
+2026-05-09 23:42:11,149 INFO Decision_engine.pipeline.processor - Raw event saved context_id=ctx_001778171130 user_id=user_001 raw_event_ref=raw_3e705b2fbb6746adb745676a246cdbdc
+2026-05-09 23:42:11,149 INFO Decision_engine.pipeline.processor - Validation result context_id=ctx_001778171130 user_id=user_001 is_valid=True errors_count=0
+2026-05-09 23:42:11,149 INFO Decision_engine.pipeline.processor - Kafka message passes validation context_id=ctx_001778171130 user_id=user_001
+2026-05-09 23:42:11,150 INFO Decision_engine.storage.repositories - Mongo save_normalized_context context_id=ctx_001778171130 user_id=user_001
+2026-05-09 23:42:11,150 INFO Decision_engine.pipeline.processor - Normalized context saved context_id=ctx_001778171130 user_id=user_001 context_timestamp=2026-05-07 18:25:30+00:00
+2026-05-09 23:42:11,151 INFO Decision_engine.pipeline.processor - Significance result context_id=ctx_001778171130 user_id=user_001 should_call_llm=True reason=visual_description_changed reasons=['visual_description_changed', 'objects_changed']
+2026-05-09 23:42:11,151 INFO Decision_engine.pipeline.processor - Calling LLM context_id=ctx_001778171130 user_id=user_001
+2026-05-09 23:42:11,469 INFO httpx - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-09 23:42:11,469 INFO Decision_engine.pipeline.processor - LLM completed context_id=ctx_001778171130 user_id=user_001 activity=meeting confidence=0.9 memory_worthy=True
+2026-05-09 23:42:11,470 INFO Decision_engine.pipeline.processor - State updated context_id=ctx_001778171130 user_id=user_001 current_activity=meeting session_minutes=0.0 in_meeting=True
+2026-05-09 23:42:11,471 INFO Decision_engine.pipeline.processor - Meeting result context_id=ctx_001778171130 user_id=user_001 action=append_meeting_transcript summary_required=False meeting_id=meet_a68bccaf0e7044bda381ac3fa59363bb
+2026-05-09 23:42:11,471 INFO Decision_engine.pipeline.processor - Rule engine completed context_id=ctx_001778171130 user_id=user_001 triggered_rules=['meeting_rule']
+2026-05-09 23:42:11,471 INFO Decision_engine.pipeline.processor - Decision generated context_id=ctx_001778171130 user_id=user_001 decision_id=dec_dd3fff922d05498f83c0e995a84ec7d4 decision_type=meeting_update actions_count=1
+2026-05-09 23:42:11,471 INFO Decision_engine.storage.repositories - Mongo upsert_user_state user_id=user_001 current_activity=meeting last_seen_at=2026-05-07 18:25:30+00:00
+2026-05-09 23:42:11,472 INFO Decision_engine.storage.repositories - Mongo save_decision_history decision_id=dec_dd3fff922d05498f83c0e995a84ec7d4 user_id=user_001 source_context_id=ctx_001778171130
+2026-05-09 23:42:11,472 INFO Decision_engine.pipeline.processor - Data written to MongoDB context_id=ctx_001778171130 user_id=user_001 collections=['raw_context_events', 'normalized_contexts', 'user_state', 'decisions_history']
+2026-05-09 23:42:11,472 INFO Decision_engine.pipeline.processor - Decision saved context_id=ctx_001778171130 user_id=user_001 decision_id=dec_dd3fff922d05498f83c0e995a84ec7d4 decision_type=meeting_update actions_count=1
+2026-05-09 23:42:11,472 INFO Decision_engine.pipeline.processor - Publish actions completed decision_id=dec_dd3fff922d05498f83c0e995a84ec7d4 context_id=ctx_001778171130 published_count=0
+2026-05-09 23:42:11,505 INFO Decision_engine.pipeline.processor - Vector memory indexed context_id=ctx_001778171130 user_id=user_001 decision_id=dec_dd3fff922d05498f83c0e995a84ec7d4
+2026-05-09 23:42:11,505 INFO Decision_engine.kafka.spark_consumer - Processor result batch_id=0 row_number=3 context_id=ctx_001778171130 status=processed significant=True decision_id=dec_dd3fff922d05498f83c0e995a84ec7d4 error=None
+2026-05-09 23:42:11,505 INFO Decision_engine.kafka.spark_consumer - Kafka message received batch_id=0 row_number=4 value_preview={"context_id": "ctx_001778171130", "user_id": "user_001", "created_at": "2026-05-07T18:25:31", "timestamp": "2026-05-07T17:25:30", "scene_description": "A group of business professionals are in a meeting, looking at pie charts on a paper.", "audio_transcript": "Modify the dashboard to focus on key metrics before Friday", "location": {"latitude": 35.7595, "longitude": -5.834, "label": "office", "place_label": "office", "zone_type": "work"}, "source": "context_ingestion", "vision": {"timestamp": "
+2026-05-09 23:42:11,505 INFO Decision_engine.kafka.spark_consumer - Kafka message parsed batch_id=0 row_number=4 context_id=ctx_001778171130 user_id=user_001 keys=['audio', 'audio_transcript', 'context_id', 'created_at', 'location', 'scene_description', 'source', 'timestamp', 'user_id', 'vision']
+2026-05-09 23:42:11,505 INFO Decision_engine.kafka.spark_consumer - Processing Kafka message batch_id=0 row_number=4 context_id=ctx_001778171130 user_id=user_001
+2026-05-09 23:42:11,505 INFO Decision_engine.pipeline.processor - Start process_event context_id=ctx_001778171130 user_id=user_001
+2026-05-09 23:42:11,506 INFO Decision_engine.storage.repositories - Mongo save_raw_context_event context_id=ctx_001778171130 user_id=user_001 raw_event_id=raw_4e3d220ce1994aeeb6d2495162b16c83 status=received
+2026-05-09 23:42:11,506 INFO Decision_engine.pipeline.processor - Raw event saved context_id=ctx_001778171130 user_id=user_001 raw_event_ref=raw_4e3d220ce1994aeeb6d2495162b16c83
+2026-05-09 23:42:11,506 INFO Decision_engine.pipeline.processor - Validation result context_id=ctx_001778171130 user_id=user_001 is_valid=True errors_count=0
+2026-05-09 23:42:11,506 INFO Decision_engine.pipeline.processor - Kafka message passes validation context_id=ctx_001778171130 user_id=user_001
+2026-05-09 23:42:11,507 INFO Decision_engine.storage.repositories - Mongo save_normalized_context context_id=ctx_001778171130 user_id=user_001
+2026-05-09 23:42:11,507 INFO Decision_engine.pipeline.processor - Normalized context saved context_id=ctx_001778171130 user_id=user_001 context_timestamp=2026-05-07 18:25:31+00:00
+2026-05-09 23:42:11,510 INFO Decision_engine.pipeline.processor - Significance result context_id=ctx_001778171130 user_id=user_001 should_call_llm=False reason=duplicate_or_low_signal reasons=[]
+2026-05-09 23:42:11,511 INFO Decision_engine.storage.repositories - Mongo upsert_user_state user_id=user_001 current_activity=meeting last_seen_at=2026-05-07 18:25:31+00:00
+2026-05-09 23:42:11,511 INFO Decision_engine.pipeline.processor - Skipping low-signal event context_id=ctx_001778171130 user_id=user_001 last_seen_at=2026-05-07 18:25:31+00:00
+2026-05-09 23:42:11,511 INFO Decision_engine.kafka.spark_consumer - Processor result batch_id=0 row_number=4 context_id=ctx_001778171130 status=not_significant significant=False decision_id=None error=None
+2026-05-09 23:42:11,511 INFO Decision_engine.kafka.spark_consumer - Kafka message received batch_id=0 row_number=5 value_preview={"context_id": "ctx_001778171145", "user_id": "user_001", "created_at": "2026-05-07T18:25:45", "timestamp": "2026-05-07T17:25:45", "scene_description": "", "audio_transcript": "", "location": {"latitude": 35.7595, "longitude": -5.834, "label": "office", "place_label": "office", "zone_type": "work"}, "source": "context_ingestion", "vision": {"objects": [], "scene_description": ""}, "audio": {"transcript": "", "keywords": []}}
+2026-05-09 23:42:11,511 INFO Decision_engine.kafka.spark_consumer - Kafka message parsed batch_id=0 row_number=5 context_id=ctx_001778171145 user_id=user_001 keys=['audio', 'audio_transcript', 'context_id', 'created_at', 'location', 'scene_description', 'source', 'timestamp', 'user_id', 'vision']
+2026-05-09 23:42:11,511 INFO Decision_engine.kafka.spark_consumer - Processing Kafka message batch_id=0 row_number=5 context_id=ctx_001778171145 user_id=user_001
+2026-05-09 23:42:11,511 INFO Decision_engine.pipeline.processor - Start process_event context_id=ctx_001778171145 user_id=user_001
+2026-05-09 23:42:11,512 INFO Decision_engine.storage.repositories - Mongo save_raw_context_event context_id=ctx_001778171145 user_id=user_001 raw_event_id=raw_63fba7a507b6456e9b1cd406c61658f3 status=received
+2026-05-09 23:42:11,512 INFO Decision_engine.pipeline.processor - Raw event saved context_id=ctx_001778171145 user_id=user_001 raw_event_ref=raw_63fba7a507b6456e9b1cd406c61658f3
+2026-05-09 23:42:11,512 INFO Decision_engine.pipeline.processor - Validation result context_id=ctx_001778171145 user_id=user_001 is_valid=True errors_count=0
+2026-05-09 23:42:11,512 INFO Decision_engine.pipeline.processor - Kafka message passes validation context_id=ctx_001778171145 user_id=user_001
+2026-05-09 23:42:11,513 INFO Decision_engine.storage.repositories - Mongo save_normalized_context context_id=ctx_001778171145 user_id=user_001
+2026-05-09 23:42:11,513 INFO Decision_engine.pipeline.processor - Normalized context saved context_id=ctx_001778171145 user_id=user_001 context_timestamp=2026-05-07 18:25:45+00:00
+2026-05-09 23:42:11,514 INFO Decision_engine.pipeline.processor - Significance result context_id=ctx_001778171145 user_id=user_001 should_call_llm=True reason=visual_description_changed reasons=['visual_description_changed', 'objects_changed']
+2026-05-09 23:42:11,514 INFO Decision_engine.pipeline.processor - Calling LLM context_id=ctx_001778171145 user_id=user_001
+2026-05-09 23:42:11,656 INFO httpx - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-05-09 23:42:11,656 INFO groq._base_client - Retrying request to /openai/v1/chat/completions in 9.000000 seconds
+2026-05-09 23:42:21,190 INFO httpx - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-09 23:42:21,191 INFO Decision_engine.pipeline.processor - LLM completed context_id=ctx_001778171145 user_id=user_001 activity=meeting confidence=0.9 memory_worthy=True
+2026-05-09 23:42:21,191 INFO Decision_engine.pipeline.processor - State updated context_id=ctx_001778171145 user_id=user_001 current_activity=meeting session_minutes=0.0 in_meeting=True
+2026-05-09 23:42:21,192 INFO Decision_engine.pipeline.processor - Meeting result context_id=ctx_001778171145 user_id=user_001 action=append_meeting_transcript summary_required=False meeting_id=meet_a68bccaf0e7044bda381ac3fa59363bb
+2026-05-09 23:42:21,192 INFO Decision_engine.pipeline.processor - Rule engine completed context_id=ctx_001778171145 user_id=user_001 triggered_rules=['meeting_rule']
+2026-05-09 23:42:21,192 INFO Decision_engine.pipeline.processor - Decision generated context_id=ctx_001778171145 user_id=user_001 decision_id=dec_f21ddfa0925a46f6a81c841c987e8183 decision_type=meeting_update actions_count=1
+2026-05-09 23:42:21,192 INFO Decision_engine.storage.repositories - Mongo upsert_user_state user_id=user_001 current_activity=meeting last_seen_at=2026-05-07 18:25:45+00:00
+2026-05-09 23:42:21,193 INFO Decision_engine.storage.repositories - Mongo save_decision_history decision_id=dec_f21ddfa0925a46f6a81c841c987e8183 user_id=user_001 source_context_id=ctx_001778171145
+2026-05-09 23:42:21,193 INFO Decision_engine.pipeline.processor - Data written to MongoDB context_id=ctx_001778171145 user_id=user_001 collections=['raw_context_events', 'normalized_contexts', 'user_state', 'decisions_history']
+2026-05-09 23:42:21,193 INFO Decision_engine.pipeline.processor - Decision saved context_id=ctx_001778171145 user_id=user_001 decision_id=dec_f21ddfa0925a46f6a81c841c987e8183 decision_type=meeting_update actions_count=1
+2026-05-09 23:42:21,193 INFO Decision_engine.pipeline.processor - Publish actions completed decision_id=dec_f21ddfa0925a46f6a81c841c987e8183 context_id=ctx_001778171145 published_count=0
+2026-05-09 23:42:21,224 INFO Decision_engine.pipeline.processor - Vector memory indexed context_id=ctx_001778171145 user_id=user_001 decision_id=dec_f21ddfa0925a46f6a81c841c987e8183
+2026-05-09 23:42:21,224 INFO Decision_engine.kafka.spark_consumer - Processor result batch_id=0 row_number=5 context_id=ctx_001778171145 status=processed significant=True decision_id=dec_f21ddfa0925a46f6a81c841c987e8183 error=None
+2026-05-09 23:42:21,225 INFO Decision_engine.kafka.spark_consumer - Kafka message received batch_id=0 row_number=6 value_preview={"context_id": "ctx_001778171145", "user_id": "user_001", "created_at": "2026-05-07T18:25:46", "timestamp": "2026-05-07T17:25:45", "scene_description": "A group of business professionals are in a meeting, discussing a presentation with pie charts.", "audio_transcript": "Modify the dashboard to focus on key metrics before Friday", "location": {"latitude": 35.7595, "longitude": -5.834, "label": "office", "place_label": "office", "zone_type": "work"}, "source": "context_ingestion", "vision": {"time
+2026-05-09 23:42:21,225 INFO Decision_engine.kafka.spark_consumer - Kafka message parsed batch_id=0 row_number=6 context_id=ctx_001778171145 user_id=user_001 keys=['audio', 'audio_transcript', 'context_id', 'created_at', 'location', 'scene_description', 'source', 'timestamp', 'user_id', 'vision']
+2026-05-09 23:42:21,225 INFO Decision_engine.kafka.spark_consumer - Processing Kafka message batch_id=0 row_number=6 context_id=ctx_001778171145 user_id=user_001
+2026-05-09 23:42:21,225 INFO Decision_engine.pipeline.processor - Start process_event context_id=ctx_001778171145 user_id=user_001
+2026-05-09 23:42:21,226 INFO Decision_engine.storage.repositories - Mongo save_raw_context_event context_id=ctx_001778171145 user_id=user_001 raw_event_id=raw_70ffc12960664d1d879c70ef532c02af status=received
+2026-05-09 23:42:21,226 INFO Decision_engine.pipeline.processor - Raw event saved context_id=ctx_001778171145 user_id=user_001 raw_event_ref=raw_70ffc12960664d1d879c70ef532c02af
+2026-05-09 23:42:21,226 INFO Decision_engine.pipeline.processor - Validation result context_id=ctx_001778171145 user_id=user_001 is_valid=True errors_count=0
+2026-05-09 23:42:21,226 INFO Decision_engine.pipeline.processor - Kafka message passes validation context_id=ctx_001778171145 user_id=user_001
+2026-05-09 23:42:21,227 INFO Decision_engine.storage.repositories - Mongo save_normalized_context context_id=ctx_001778171145 user_id=user_001
+2026-05-09 23:42:21,227 INFO Decision_engine.pipeline.processor - Normalized context saved context_id=ctx_001778171145 user_id=user_001 context_timestamp=2026-05-07 18:25:46+00:00
+2026-05-09 23:42:21,228 INFO Decision_engine.pipeline.processor - Significance result context_id=ctx_001778171145 user_id=user_001 should_call_llm=False reason=duplicate_or_low_signal reasons=[]
+2026-05-09 23:42:21,229 INFO Decision_engine.storage.repositories - Mongo upsert_user_state user_id=user_001 current_activity=meeting last_seen_at=2026-05-07 18:25:46+00:00
+2026-05-09 23:42:21,229 INFO Decision_engine.pipeline.processor - Skipping low-signal event context_id=ctx_001778171145 user_id=user_001 last_seen_at=2026-05-07 18:25:46+00:00
+2026-05-09 23:42:21,229 INFO Decision_engine.kafka.spark_consumer - Processor result batch_id=0 row_number=6 context_id=ctx_001778171145 status=not_significant significant=False decision_id=None error=None
+2026-05-09 23:42:21,229 INFO Decision_engine.kafka.spark_consumer - Kafka message received batch_id=0 row_number=7 value_preview={"context_id": "ctx_001778171160", "user_id": "user_001", "created_at": "2026-05-07T18:26:00", "timestamp": "2026-05-07T17:26:00", "scene_description": "", "audio_transcript": "", "location": {"latitude": 35.7595, "longitude": -5.834, "label": "office", "place_label": "office", "zone_type": "work"}, "source": "context_ingestion", "vision": {"objects": [], "scene_description": ""}, "audio": {"transcript": "", "keywords": []}}
+2026-05-09 23:42:21,229 INFO Decision_engine.kafka.spark_consumer - Kafka message parsed batch_id=0 row_number=7 context_id=ctx_001778171160 user_id=user_001 keys=['audio', 'audio_transcript', 'context_id', 'created_at', 'location', 'scene_description', 'source', 'timestamp', 'user_id', 'vision']
+2026-05-09 23:42:21,230 INFO Decision_engine.kafka.spark_consumer - Processing Kafka message batch_id=0 row_number=7 context_id=ctx_001778171160 user_id=user_001
+2026-05-09 23:42:21,230 INFO Decision_engine.pipeline.processor - Start process_event context_id=ctx_001778171160 user_id=user_001
+2026-05-09 23:42:21,230 INFO Decision_engine.storage.repositories - Mongo save_raw_context_event context_id=ctx_001778171160 user_id=user_001 raw_event_id=raw_4c85958e0b4c45d692e1a18428558920 status=received
+2026-05-09 23:42:21,230 INFO Decision_engine.pipeline.processor - Raw event saved context_id=ctx_001778171160 user_id=user_001 raw_event_ref=raw_4c85958e0b4c45d692e1a18428558920
+2026-05-09 23:42:21,230 INFO Decision_engine.pipeline.processor - Validation result context_id=ctx_001778171160 user_id=user_001 is_valid=True errors_count=0
+2026-05-09 23:42:21,230 INFO Decision_engine.pipeline.processor - Kafka message passes validation context_id=ctx_001778171160 user_id=user_001
+2026-05-09 23:42:21,231 INFO Decision_engine.storage.repositories - Mongo save_normalized_context context_id=ctx_001778171160 user_id=user_001
+2026-05-09 23:42:21,231 INFO Decision_engine.pipeline.processor - Normalized context saved context_id=ctx_001778171160 user_id=user_001 context_timestamp=2026-05-07 18:26:00+00:00
+2026-05-09 23:42:21,232 INFO Decision_engine.pipeline.processor - Significance result context_id=ctx_001778171160 user_id=user_001 should_call_llm=True reason=visual_description_changed reasons=['visual_description_changed', 'objects_changed']
+2026-05-09 23:42:21,232 INFO Decision_engine.pipeline.processor - Calling LLM context_id=ctx_001778171160 user_id=user_001
+2026-05-09 23:42:21,396 INFO httpx - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-05-09 23:42:21,396 INFO groq._base_client - Retrying request to /openai/v1/chat/completions in 10.000000 seconds
+2026-05-09 23:42:31,982 INFO httpx - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-09 23:42:31,984 INFO Decision_engine.pipeline.processor - LLM completed context_id=ctx_001778171160 user_id=user_001 activity=meeting confidence=0.9 memory_worthy=True
+2026-05-09 23:42:31,984 INFO Decision_engine.pipeline.processor - State updated context_id=ctx_001778171160 user_id=user_001 current_activity=meeting session_minutes=0.0 in_meeting=True
+2026-05-09 23:42:31,985 INFO Decision_engine.pipeline.processor - Meeting result context_id=ctx_001778171160 user_id=user_001 action=append_meeting_transcript summary_required=False meeting_id=meet_a68bccaf0e7044bda381ac3fa59363bb
+2026-05-09 23:42:31,985 INFO Decision_engine.pipeline.processor - Rule engine completed context_id=ctx_001778171160 user_id=user_001 triggered_rules=['meeting_rule']
+2026-05-09 23:42:31,985 INFO Decision_engine.pipeline.processor - Decision generated context_id=ctx_001778171160 user_id=user_001 decision_id=dec_413594548f394d22a25c9a1cd526a62e decision_type=meeting_update actions_count=1
+2026-05-09 23:42:31,986 INFO Decision_engine.storage.repositories - Mongo upsert_user_state user_id=user_001 current_activity=meeting last_seen_at=2026-05-07 18:26:00+00:00
+2026-05-09 23:42:31,987 INFO Decision_engine.storage.repositories - Mongo save_decision_history decision_id=dec_413594548f394d22a25c9a1cd526a62e user_id=user_001 source_context_id=ctx_001778171160
+2026-05-09 23:42:31,987 INFO Decision_engine.pipeline.processor - Data written to MongoDB context_id=ctx_001778171160 user_id=user_001 collections=['raw_context_events', 'normalized_contexts', 'user_state', 'decisions_history']
+2026-05-09 23:42:31,987 INFO Decision_engine.pipeline.processor - Decision saved context_id=ctx_001778171160 user_id=user_001 decision_id=dec_413594548f394d22a25c9a1cd526a62e decision_type=meeting_update actions_count=1
+2026-05-09 23:42:31,988 INFO Decision_engine.pipeline.processor - Publish actions completed decision_id=dec_413594548f394d22a25c9a1cd526a62e context_id=ctx_001778171160 published_count=0
+2026-05-09 23:42:32,028 INFO Decision_engine.pipeline.processor - Vector memory indexed context_id=ctx_001778171160 user_id=user_001 decision_id=dec_413594548f394d22a25c9a1cd526a62e
+2026-05-09 23:42:32,028 INFO Decision_engine.kafka.spark_consumer - Processor result batch_id=0 row_number=7 context_id=ctx_001778171160 status=processed significant=True decision_id=dec_413594548f394d22a25c9a1cd526a62e error=None
+2026-05-09 23:42:32,028 INFO Decision_engine.kafka.spark_consumer - Kafka message received batch_id=0 row_number=8 value_preview={"context_id": "ctx_001778171160", "user_id": "user_001", "created_at": "2026-05-07T18:26:01", "timestamp": "2026-05-07T17:26:00", "scene_description": "A group of business professionals are in a meeting, discussing a presentation with pie charts.", "audio_transcript": "Modify the dashboard to focus on key metrics before Friday", "location": {"latitude": 35.7595, "longitude": -5.834, "label": "office", "place_label": "office", "zone_type": "work"}, "source": "context_ingestion", "vision": {"time
+2026-05-09 23:42:32,028 INFO Decision_engine.kafka.spark_consumer - Kafka message parsed batch_id=0 row_number=8 context_id=ctx_001778171160 user_id=user_001 keys=['audio', 'audio_transcript', 'context_id', 'created_at', 'location', 'scene_description', 'source', 'timestamp', 'user_id', 'vision']
+2026-05-09 23:42:32,029 INFO Decision_engine.kafka.spark_consumer - Processing Kafka message batch_id=0 row_number=8 context_id=ctx_001778171160 user_id=user_001
+2026-05-09 23:42:32,029 INFO Decision_engine.pipeline.processor - Start process_event context_id=ctx_001778171160 user_id=user_001
+2026-05-09 23:42:32,031 INFO Decision_engine.storage.repositories - Mongo save_raw_context_event context_id=ctx_001778171160 user_id=user_001 raw_event_id=raw_48f4797f73a44cf88fe0a658b541827d status=received
+2026-05-09 23:42:32,031 INFO Decision_engine.pipeline.processor - Raw event saved context_id=ctx_001778171160 user_id=user_001 raw_event_ref=raw_48f4797f73a44cf88fe0a658b541827d
+2026-05-09 23:42:32,031 INFO Decision_engine.pipeline.processor - Validation result context_id=ctx_001778171160 user_id=user_001 is_valid=True errors_count=0
+2026-05-09 23:42:32,031 INFO Decision_engine.pipeline.processor - Kafka message passes validation context_id=ctx_001778171160 user_id=user_001
+2026-05-09 23:42:32,032 INFO Decision_engine.storage.repositories - Mongo save_normalized_context context_id=ctx_001778171160 user_id=user_001
+2026-05-09 23:42:32,032 INFO Decision_engine.pipeline.processor - Normalized context saved context_id=ctx_001778171160 user_id=user_001 context_timestamp=2026-05-07 18:26:01+00:00
+2026-05-09 23:42:32,034 INFO Decision_engine.pipeline.processor - Significance result context_id=ctx_001778171160 user_id=user_001 should_call_llm=False reason=duplicate_or_low_signal reasons=[]
+2026-05-09 23:42:32,034 INFO Decision_engine.storage.repositories - Mongo upsert_user_state user_id=user_001 current_activity=meeting last_seen_at=2026-05-07 18:26:01+00:00
+2026-05-09 23:42:32,034 INFO Decision_engine.pipeline.processor - Skipping low-signal event context_id=ctx_001778171160 user_id=user_001 last_seen_at=2026-05-07 18:26:01+00:00
+2026-05-09 23:42:32,034 INFO Decision_engine.kafka.spark_consumer - Processor result batch_id=0 row_number=8 context_id=ctx_001778171160 status=not_significant significant=False decision_id=None error=None
+2026-05-09 23:42:32,034 INFO Decision_engine.kafka.spark_consumer - Kafka message received batch_id=0 row_number=9 value_preview={"context_id": "ctx_001778171175", "user_id": "user_001", "created_at": "2026-05-07T18:26:15", "timestamp": "2026-05-07T17:26:15", "scene_description": "", "audio_transcript": "", "location": {"latitude": 35.7595, "longitude": -5.834, "label": "office", "place_label": "office", "zone_type": "work"}, "source": "context_ingestion", "vision": {"objects": [], "scene_description": ""}, "audio": {"transcript": "", "keywords": []}}
+2026-05-09 23:42:32,034 INFO Decision_engine.kafka.spark_consumer - Kafka message parsed batch_id=0 row_number=9 context_id=ctx_001778171175 user_id=user_001 keys=['audio', 'audio_transcript', 'context_id', 'created_at', 'location', 'scene_description', 'source', 'timestamp', 'user_id', 'vision']
+2026-05-09 23:42:32,034 INFO Decision_engine.kafka.spark_consumer - Processing Kafka message batch_id=0 row_number=9 context_id=ctx_001778171175 user_id=user_001
+2026-05-09 23:42:32,034 INFO Decision_engine.pipeline.processor - Start process_event context_id=ctx_001778171175 user_id=user_001
+2026-05-09 23:42:32,035 INFO Decision_engine.storage.repositories - Mongo save_raw_context_event context_id=ctx_001778171175 user_id=user_001 raw_event_id=raw_04f75083403c48faabec682faa5f3e67 status=received
+2026-05-09 23:42:32,035 INFO Decision_engine.pipeline.processor - Raw event saved context_id=ctx_001778171175 user_id=user_001 raw_event_ref=raw_04f75083403c48faabec682faa5f3e67
+2026-05-09 23:42:32,035 INFO Decision_engine.pipeline.processor - Validation result context_id=ctx_001778171175 user_id=user_001 is_valid=True errors_count=0
+2026-05-09 23:42:32,035 INFO Decision_engine.pipeline.processor - Kafka message passes validation context_id=ctx_001778171175 user_id=user_001
+2026-05-09 23:42:32,036 INFO Decision_engine.storage.repositories - Mongo save_normalized_context context_id=ctx_001778171175 user_id=user_001
+2026-05-09 23:42:32,036 INFO Decision_engine.pipeline.processor - Normalized context saved context_id=ctx_001778171175 user_id=user_001 context_timestamp=2026-05-07 18:26:15+00:00
+2026-05-09 23:42:32,037 INFO Decision_engine.pipeline.processor - Significance result context_id=ctx_001778171175 user_id=user_001 should_call_llm=True reason=visual_description_changed reasons=['visual_description_changed', 'objects_changed']
+2026-05-09 23:42:32,037 INFO Decision_engine.pipeline.processor - Calling LLM context_id=ctx_001778171175 user_id=user_001
+2026-05-09 23:42:32,209 INFO httpx - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-05-09 23:42:32,210 INFO groq._base_client - Retrying request to /openai/v1/chat/completions in 10.000000 seconds
+2026-05-09 23:42:42,759 INFO httpx - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-09 23:42:42,760 INFO Decision_engine.pipeline.processor - LLM completed context_id=ctx_001778171175 user_id=user_001 activity=meeting confidence=0.9 memory_worthy=True
+2026-05-09 23:42:42,760 INFO Decision_engine.pipeline.processor - State updated context_id=ctx_001778171175 user_id=user_001 current_activity=meeting session_minutes=0.0 in_meeting=True
+2026-05-09 23:42:42,761 INFO Decision_engine.pipeline.processor - Meeting result context_id=ctx_001778171175 user_id=user_001 action=append_meeting_transcript summary_required=False meeting_id=meet_a68bccaf0e7044bda381ac3fa59363bb
+2026-05-09 23:42:42,761 INFO Decision_engine.pipeline.processor - Rule engine completed context_id=ctx_001778171175 user_id=user_001 triggered_rules=['meeting_rule']
+2026-05-09 23:42:42,761 INFO Decision_engine.pipeline.processor - Decision generated context_id=ctx_001778171175 user_id=user_001 decision_id=dec_08b628ad21bf42f19d4636dd5fd6d7db decision_type=meeting_update actions_count=1
+2026-05-09 23:42:42,761 INFO Decision_engine.storage.repositories - Mongo upsert_user_state user_id=user_001 current_activity=meeting last_seen_at=2026-05-07 18:26:15+00:00
+2026-05-09 23:42:42,762 INFO Decision_engine.storage.repositories - Mongo save_decision_history decision_id=dec_08b628ad21bf42f19d4636dd5fd6d7db user_id=user_001 source_context_id=ctx_001778171175
+2026-05-09 23:42:42,762 INFO Decision_engine.pipeline.processor - Data written to MongoDB context_id=ctx_001778171175 user_id=user_001 collections=['raw_context_events', 'normalized_contexts', 'user_state', 'decisions_history']
+2026-05-09 23:42:42,762 INFO Decision_engine.pipeline.processor - Decision saved context_id=ctx_001778171175 user_id=user_001 decision_id=dec_08b628ad21bf42f19d4636dd5fd6d7db decision_type=meeting_update actions_count=1
+2026-05-09 23:42:42,763 INFO Decision_engine.pipeline.processor - Publish actions completed decision_id=dec_08b628ad21bf42f19d4636dd5fd6d7db context_id=ctx_001778171175 published_count=0
+2026-05-09 23:42:42,793 INFO Decision_engine.pipeline.processor - Vector memory indexed context_id=ctx_001778171175 user_id=user_001 decision_id=dec_08b628ad21bf42f19d4636dd5fd6d7db
+2026-05-09 23:42:42,794 INFO Decision_engine.kafka.spark_consumer - Processor result batch_id=0 row_number=9 context_id=ctx_001778171175 status=processed significant=True decision_id=dec_08b628ad21bf42f19d4636dd5fd6d7db error=None
+2026-05-09 23:42:42,794 INFO Decision_engine.kafka.spark_consumer - Kafka message received batch_id=0 row_number=10 value_preview={"context_id": "ctx_001778171175", "user_id": "user_001", "created_at": "2026-05-07T18:26:16", "timestamp": "2026-05-07T17:26:15", "scene_description": "A group of business professionals are in a meeting, discussing a presentation with pie charts.", "audio_transcript": "Modify the dashboard to focus on key metrics before Friday", "location": {"latitude": 35.7595, "longitude": -5.834, "label": "office", "place_label": "office", "zone_type": "work"}, "source": "context_ingestion", "vision": {"time
+2026-05-09 23:42:42,794 INFO Decision_engine.kafka.spark_consumer - Kafka message parsed batch_id=0 row_number=10 context_id=ctx_001778171175 user_id=user_001 keys=['audio', 'audio_transcript', 'context_id', 'created_at', 'location', 'scene_description', 'source', 'timestamp', 'user_id', 'vision']
+2026-05-09 23:42:42,794 INFO Decision_engine.kafka.spark_consumer - Processing Kafka message batch_id=0 row_number=10 context_id=ctx_001778171175 user_id=user_001
+2026-05-09 23:42:42,794 INFO Decision_engine.pipeline.processor - Start process_event context_id=ctx_001778171175 user_id=user_001
+2026-05-09 23:42:42,795 INFO Decision_engine.storage.repositories - Mongo save_raw_context_event context_id=ctx_001778171175 user_id=user_001 raw_event_id=raw_f33b380586204730918b0d1922d828fe status=received
+2026-05-09 23:42:42,795 INFO Decision_engine.pipeline.processor - Raw event saved context_id=ctx_001778171175 user_id=user_001 raw_event_ref=raw_f33b380586204730918b0d1922d828fe
+2026-05-09 23:42:42,795 INFO Decision_engine.pipeline.processor - Validation result context_id=ctx_001778171175 user_id=user_001 is_valid=True errors_count=0
+2026-05-09 23:42:42,795 INFO Decision_engine.pipeline.processor - Kafka message passes validation context_id=ctx_001778171175 user_id=user_001
+2026-05-09 23:42:42,796 INFO Decision_engine.storage.repositories - Mongo save_normalized_context context_id=ctx_001778171175 user_id=user_001
+2026-05-09 23:42:42,796 INFO Decision_engine.pipeline.processor - Normalized context saved context_id=ctx_001778171175 user_id=user_001 context_timestamp=2026-05-07 18:26:16+00:00
+2026-05-09 23:42:42,798 INFO Decision_engine.pipeline.processor - Significance result context_id=ctx_001778171175 user_id=user_001 should_call_llm=False reason=duplicate_or_low_signal reasons=[]
+2026-05-09 23:42:42,798 INFO Decision_engine.storage.repositories - Mongo upsert_user_state user_id=user_001 current_activity=meeting last_seen_at=2026-05-07 18:26:16+00:00
+2026-05-09 23:42:42,798 INFO Decision_engine.pipeline.processor - Skipping low-signal event context_id=ctx_001778171175 user_id=user_001 last_seen_at=2026-05-07 18:26:16+00:00
+2026-05-09 23:42:42,798 INFO Decision_engine.kafka.spark_consumer - Processor result batch_id=0 row_number=10 context_id=ctx_001778171175 status=not_significant significant=False decision_id=None error=None
+2026-05-09 23:42:42,798 INFO Decision_engine.kafka.spark_consumer - Kafka message received batch_id=0 row_number=11 value_preview={"context_id": "ctx_001778171190", "user_id": "user_001", "created_at": "2026-05-07T18:26:30", "timestamp": "2026-05-07T17:26:30", "scene_description": "", "audio_transcript": "", "location": {"latitude": 35.7595, "longitude": -5.834, "label": "office", "place_label": "office", "zone_type": "work"}, "source": "context_ingestion", "vision": {"objects": [], "scene_description": ""}, "audio": {"transcript": "", "keywords": []}}
+2026-05-09 23:42:42,798 INFO Decision_engine.kafka.spark_consumer - Kafka message parsed batch_id=0 row_number=11 context_id=ctx_001778171190 user_id=user_001 keys=['audio', 'audio_transcript', 'context_id', 'created_at', 'location', 'scene_description', 'source', 'timestamp', 'user_id', 'vision']
+2026-05-09 23:42:42,798 INFO Decision_engine.kafka.spark_consumer - Processing Kafka message batch_id=0 row_number=11 context_id=ctx_001778171190 user_id=user_001
+2026-05-09 23:42:42,798 INFO Decision_engine.pipeline.processor - Start process_event context_id=ctx_001778171190 user_id=user_001
+2026-05-09 23:42:42,799 INFO Decision_engine.storage.repositories - Mongo save_raw_context_event context_id=ctx_001778171190 user_id=user_001 raw_event_id=raw_d406f4717f834d0ca74dcd4b7addcdc4 status=received
+2026-05-09 23:42:42,799 INFO Decision_engine.pipeline.processor - Raw event saved context_id=ctx_001778171190 user_id=user_001 raw_event_ref=raw_d406f4717f834d0ca74dcd4b7addcdc4
+2026-05-09 23:42:42,799 INFO Decision_engine.pipeline.processor - Validation result context_id=ctx_001778171190 user_id=user_001 is_valid=True errors_count=0
+2026-05-09 23:42:42,799 INFO Decision_engine.pipeline.processor - Kafka message passes validation context_id=ctx_001778171190 user_id=user_001
+2026-05-09 23:42:42,799 INFO Decision_engine.storage.repositories - Mongo save_normalized_context context_id=ctx_001778171190 user_id=user_001
+2026-05-09 23:42:42,799 INFO Decision_engine.pipeline.processor - Normalized context saved context_id=ctx_001778171190 user_id=user_001 context_timestamp=2026-05-07 18:26:30+00:00
+2026-05-09 23:42:42,801 INFO Decision_engine.pipeline.processor - Significance result context_id=ctx_001778171190 user_id=user_001 should_call_llm=True reason=visual_description_changed reasons=['visual_description_changed', 'objects_changed']
+2026-05-09 23:42:42,801 INFO Decision_engine.pipeline.processor - Calling LLM context_id=ctx_001778171190 user_id=user_001
+2026-05-09 23:42:42,946 INFO httpx - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-05-09 23:42:42,946 INFO groq._base_client - Retrying request to /openai/v1/chat/completions in 9.000000 seconds

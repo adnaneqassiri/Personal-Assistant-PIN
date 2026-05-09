@@ -1,3 +1,4 @@
+import sqlite3
 from datetime import date, datetime
 from typing import Any, Dict, Optional
 
@@ -48,7 +49,16 @@ class ChromaVectorStore(VectorStorePort):
 
     def _get_collection(self, client=None):
         client = client or self._build_client()
-        return client.get_or_create_collection(name=self.collection_name)
+        try:
+            return client.get_or_create_collection(name=self.collection_name)
+        except sqlite3.OperationalError as exc:
+            if "collections.topic" in str(exc):
+                raise RuntimeError(
+                    "ChromaDB local schema is incompatible with the installed "
+                    "chromadb package. Delete the local Chroma store and retry: "
+                    "rm -rf chroma && mkdir -p chroma"
+                ) from exc
+            raise
 
     def _build_client(self):
         try:
