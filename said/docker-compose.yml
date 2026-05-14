@@ -1,0 +1,28 @@
+services:
+  mongodb:
+    image: mongo:7
+    container_name: ai_assistant_mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: ai_life_companion
+    volumes:
+      - mongo_data:/data/db
+      - ./mongo-init:/docker-entrypoint-initdb.d
+
+  mongo-express:
+    image: mongo-express:1.0.2
+    container_name: ai_assistant_mongo_express
+    restart: always
+    ports:
+      - "8081:8081"
+    environment:
+      ME_CONFIG_MONGODB_SERVER: mongodb
+      ME_CONFIG_MONGODB_PORT: 27017
+      ME_CONFIG_BASICAUTH: false
+    depends_on:
+      - mongodb
+
+volumes:
+  mongo_data:
