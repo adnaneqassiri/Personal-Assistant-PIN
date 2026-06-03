@@ -1,15 +1,17 @@
 import os
 import sys
-import json
 import uuid
-import datetime
 import requests
 import openpyxl
-import atexit
 from datetime import datetime, timedelta
+from dotenv import load_dotenv
 from openpyxl.styles import PatternFill, Font, Alignment
 from openpyxl.utils import get_column_letter
 from duckduckgo_search import DDGS
+from db import get_users_col, get_conversations_col, find_or_create_user, get_user_history
+
+load_dotenv()
+USER_ID: str = os.getenv("USER_ID", "default_user")
 
 from langchain_ollama import ChatOllama
 from langchain_core.prompts import ChatPromptTemplate
@@ -20,42 +22,50 @@ from langchain_core.callbacks.base import BaseCallbackHandler
 
 
 # ─────────────────────────────────────────
-# 1. CLASSES: PROFILE & STORAGE  (in-memory caches, lazy flush)
+# 1. CLASSES: PROFILE & STORAGE  (MongoDB-backed)
 # ─────────────────────────────────────────
 
 class UserProfile:
     """
-    OPTIMIZATION: Keeps a live in-memory dict.
-    - Reads disk ONCE at startup, then works purely from memory.
-    - Writes to disk only when data actually changes (write-through).
-    - No per-message JSON load.
+    MongoDB-backed user profile.
+    - Loads the user document ONCE at startup into an in-memory cache.
+    - update() / delete() write through to MongoDB immediately via $set / $unset.
+    - get_all() / to_prompt_string() read only from the cache — zero DB round-trips.
     """
-    def __init__(self, file_path: str = "user_profile.json"):
-        self.file_path = file_path
+
+    def __init__(self, user_id: str = USER_ID):
+        self.user_id = user_id
+        self._col = get_users_col()
         self._cache: dict = {}
         self._load_once()
 
     def _load_once(self):
-        if os.path.exists(self.file_path):
-            with open(self.file_path, "r", encoding="utf-8") as f:
-                self._cache = json.load(f)
-
-    def _flush(self):
-        with open(self.file_path, "w", encoding="utf-8") as f:
-            json.dump(self._cache, f, indent=2, ensure_ascii=False)
+        """Fetch the user document once; strip MongoDB internals."""
+        doc = self._col.find_one({"user_id": self.user_id})
+        if doc:
+            self._cache = {k: v for k, v in doc.items() if k not in ("_id", "user_id")}
 
     def update(self, key: str, value: str):
+        """Persist a single profile field via $set (upsert-safe)."""
         self._cache[key] = value
-        self._flush()
+        self._col.update_one(
+            {"user_id": self.user_id},
+            {"$set": {key: value, "user_id": self.user_id}},
+            upsert=True,
+        )
         print(f"\n🔍 DEBUG: Profile saved → {key}: {value}")
 
     def delete(self, key: str):
+        """Remove a single profile field via $unset."""
         if key in self._cache:
             del self._cache[key]
-            self._flush()
+            self._col.update_one(
+                {"user_id": self.user_id},
+                {"$unset": {key: ""}},
+            )
 
     def get_all(self) -> dict:
-        return self._cache          # no disk I/O
+        return self._cache
 
     def to_prompt_string(self) -> str:
         if not self._cache:
@@ -65,67 +75,55 @@ class UserProfile:
 
 class ConversationStorage:
     """
-    OPTIMIZATION: Buffers messages in memory; flushes to disk every
-    FLUSH_EVERY messages (default 5) or on clean exit.
-    - Eliminates per-message JSON load+write.
-    - Still persists correctly even if you Ctrl-C (atexit flush).
+    MongoDB-backed conversation storage.
+    - Creates one document per session in the 'conversations' collection.
+    - save_message() uses $push to append messages and $set to update
+      metadata — no full-document rewrites, no atexit flush needed.
+    - print_history() re-reads the live document from MongoDB.
     """
-    FLUSH_EVERY = 5
 
-    def __init__(self, file_path: str = "coach_conversations.json"):
-        self.file_path = file_path
+    def __init__(self, user_id: str = USER_ID):
+        self.user_id = user_id
         self.session_id = str(uuid.uuid4())[:8]
-        self._session_buf: dict = {
+        self._col = get_conversations_col()
+        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        # Insert the session document immediately so the session exists in DB
+        self._col.insert_one({
             "session_id": self.session_id,
+            "user_id": self.user_id,
             "date": datetime.now().strftime("%Y-%m-%d"),
-            "started_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "messages": []
-        }
-        self._unflushed = 0
-        atexit.register(self._flush)
-
-    def _flush(self):
-        if not self._session_buf["messages"]:
-            return
-        if os.path.exists(self.file_path):
-            with open(self.file_path, "r", encoding="utf-8") as f:
-                data = json.load(f)
-        else:
-            data = {"sessions": []}
-
-        existing = next(
-            (s for s in data["sessions"] if s["session_id"] == self.session_id), None
-        )
-        if existing:
-            existing.update(self._session_buf)
-        else:
-            data["sessions"].append(self._session_buf)
-
-        self._session_buf["last_updated"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        self._session_buf["total_messages"] = len(self._session_buf["messages"])
-
-        with open(self.file_path, "w", encoding="utf-8") as f:
-            json.dump(data, f, indent=2, ensure_ascii=False)
-        self._unflushed = 0
+            "started_at": now,
+            "messages": [],
+            "total_messages": 0,
+            "last_updated": now,
+        })
 
     def save_message(self, role: str, message: str):
-        self._session_buf["messages"].append({
+        """Append a message to the session document using $push."""
+        entry = {
             "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "role": role,
-            "message": message
-        })
-        self._unflushed += 1
-        if self._unflushed >= self.FLUSH_EVERY:
-            self._flush()
+            "message": message,
+        }
+        self._col.update_one(
+            {"session_id": self.session_id},
+            {
+                "$push": {"messages": entry},
+                "$inc":  {"total_messages": 1},
+                "$set":  {"last_updated": entry["timestamp"]},
+            },
+        )
 
     def print_history(self):
-        msgs = self._session_buf["messages"]
-        if not msgs:
+        """Fetch and display the current session's messages from MongoDB."""
+        doc = self._col.find_one({"session_id": self.session_id})
+        if not doc or not doc.get("messages"):
             print("No messages yet.")
             return
-        print(f"\n📅 Session: {self.session_id} — {self._session_buf['date']}")
+        print(f"\n📅 Session: {self.session_id} — {doc['date']}")
         print("=" * 55)
-        for msg in msgs:
+        for msg in doc["messages"]:
             role = "You" if msg["role"] == "human" else "COACH"
             print(f"[{msg['timestamp']}] {role}: {msg['message']}\n")
 
@@ -392,12 +390,23 @@ Intent detection:
 # ─────────────────────────────────────────
 
 def main():
-    profile = UserProfile()
+    import argparse
+    parser = argparse.ArgumentParser(description="COACH — Personal AI Productivity Assistant")
+    parser.add_argument("log_file", nargs="?", help="Path to the daily log file (.txt or .pdf)")
+    parser.add_argument("--user", default=USER_ID,
+                        help="Unique username (e.g. zakaria). Two users with the same "
+                             "display name must pick different usernames.")
+    args = parser.parse_args()
 
-    file_path = sys.argv[1] if len(sys.argv) > 1 else input("📂 Path to log: ").strip()
+    # Resolve username → stable UUID (creates account on first run)
+    user_id  = find_or_create_user(args.user)
+    username = args.user
+
+    file_path   = args.log_file or input("📂 Path to log: ").strip()
     log_content = load_document(file_path)
 
-    storage = ConversationStorage()
+    profile = UserProfile(user_id=user_id)
+    storage = ConversationStorage(user_id=user_id)
     all_tools = tools_list + make_profile_tools(profile)
     handler = StreamingHandler()
 
@@ -410,14 +419,14 @@ def main():
     #
     # Change the model name below to whatever you have pulled in Ollama.
     # ─────────────────────────────────────────────────────────────────────
-    MODEL = "gemma4:e2b"
+    MODEL = os.getenv("OLLAMA_MODEL", "gemma4:e2b")
 
     llm = ChatOllama(
         model=MODEL,
         streaming=True,
         callbacks=[handler],
         # These reduce CPU memory pressure and improve throughput:
-        num_ctx=2048,       # smaller context window = less RAM, faster prefill
+        num_ctx=32768,      # increased context window to read whole context
         num_thread=max(1, os.cpu_count() - 1),  # leave 1 core for the OS
     )
 
@@ -449,6 +458,20 @@ def main():
             break
         if user_input.lower() == "history":
             storage.print_history()
+            continue
+        if user_input.lower() == "history all":
+            sessions = get_user_history(user_id)
+            if not sessions:
+                print("📢 No conversation history found for this user.")
+            else:
+                print(f"\n📚 Full history for '{username}' — {len(sessions)} session(s)\n")
+                for s in sessions:
+                    print(f"📅 Session {s['session_id']}  |  {s['date']}  |  {s['total_messages']} messages")
+                    print("-" * 55)
+                    for msg in s.get("messages", []):
+                        role = "You" if msg["role"] == "human" else "COACH"
+                        print(f"  [{msg['timestamp']}] {role}: {msg['message']}")
+                    print()
             continue
 
         try:

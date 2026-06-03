@@ -6,3 +6,11 @@ langchain-community
 langchain-ollama
 openpyxl
 requests
+pymongo
+python-dotenv
+google-auth-oauthlib
+fastapi[all]
+python-jose[cryptography]
+pypdf
+python-multipart
+langchain-openai
