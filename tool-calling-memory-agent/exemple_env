@@ -1,0 +1,16 @@
+MONGO_URI=mongodb://localhost:27017
+DB_NAME=personal_assistant_db
+USER_ID=default_user
+
+# Google OAuth
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GOOGLE_REDIRECT_URI=http://localhost:8000/auth/google/callback
+
+# App
+SECRET_KEY=
+FRONTEND_URL=http://localhost:5173
+
+OLLAMA_MODEL=gemma4:e2b
+
+
